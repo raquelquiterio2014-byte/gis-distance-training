@@ -4,6 +4,20 @@ Hands-on GIS learning with **QGIS and Python**, using European regional polygons
 
 This is an educational project, separate from the official ERA Energy project. The current release is a **Python desktop application** with an English interface, run locally through PyCharm. Phase 3 adds a local FastAPI service and a desktop API comparison tab.
 
+## Paris landmarks — QGIS → Python → FastAPI
+
+The [Paris project](paris/README.md) includes the three manually digitized entrance points for Notre-Dame Cathedral, the Louvre Museum, and the Eiffel Tower, an English desktop dashboard, a local FastAPI service, and comparison with the recorded QGIS distance matrix.
+
+- Open the `paris` folder and double-click `RUN_DASHBOARD.cmd` on Windows (Python 3.12 required).
+- Start `RUN_API.cmd` in the same folder; Paris API documentation: http://127.0.0.1:8001/docs.
+- Run the Paris tests from that folder: `python -m unittest -v`.
+
+The three distances agree with the recorded QGIS values within 0.001 m. The points were manually digitized from a basemap; numerical agreement does not establish entrance-position accuracy. Desktop and API share a calculation engine.
+
+![Paris coordinate plot — no street basemap](paris/assets/paris_distances_preview.png)
+
+The European regional-centroid application remains in the repository root; the instructions below apply to that application.
+
 ## Desktop application
 
 The screenshots below document the earlier Phase 2 interface in Portuguese. The current Phase 3 dashboard, API descriptions, code messages, and generated maps are in English.
