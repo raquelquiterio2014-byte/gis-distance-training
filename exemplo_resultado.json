@@ -1,0 +1,25 @@
+{
+  "origin": "FR10",
+  "destination": "FRF3",
+  "origin_name": "Ile-de-France",
+  "destination_name": "Lorraine",
+  "centroids_lon_lat": [
+    [
+      2.5106953496118245,
+      48.71303095314116
+    ],
+    [
+      6.146890443692977,
+      48.76078944599511
+    ]
+  ],
+  "distance_m": 267492.7722732408,
+  "distance_km": 267.4927722732408,
+  "centroid_crs": "EPSG:3035",
+  "coordinate_crs": "EPSG:4326",
+  "ellipsoid": "WGS84",
+  "method": "Geodesic between polygon centroids; no road routing",
+  "qgis_reference_m": 267492.77227324113,
+  "difference_m": 3.4924596548080444e-10,
+  "within_1m": true
+}
