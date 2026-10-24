@@ -1,37 +1,42 @@
-# GIS Training — Rio de Janeiro
+# GIS Training — Rio de Janeiro v2
 
-English Python desktop dashboard and local FastAPI service following the Paris
-exercise in this repository: **QGIS → Python → FastAPI → comparison → GitHub**.
-The code is published first; visual QGIS review and independent reference measurements
-are still pending. This is an educational exercise.
+Four reference locations, six WGS 84 geodesic distances, an English Python desktop
+dashboard and a local FastAPI service. Workflow: QGIS → Python → FastAPI → comparison → GitHub.
 
-## Access points
+## Locations
 
-| ID | Access reference | Latitude | Longitude |
+| ID | Location | Latitude | Longitude |
 |---|---|---:|---:|
-| RIO01 | Copacabana Palace — Main Entrance | -22.9670 | -43.1786 |
-| RIO02 | Christ the Redeemer — Cosme Velho Train Access | -22.9406 | -43.1985 |
-| RIO03 | Sugarloaf Cable Car — Praia Vermelha Access | -22.9558 | -43.1670 |
+| RIO01 | Copacabana Palace — Main Entrance | -22.967 | -43.1786 |
+| RIO02 | Christ the Redeemer — Monument | -22.9519173 | -43.2104585 |
+| RIO03 | Sugarloaf Mountain — Summit | -22.9494891 | -43.1561568 |
+| RIO04 | Cosme Velho — Train Station Entrance | -22.9406 | -43.1985 |
 
-**APPROXIMATE_PENDING_QGIS_REVIEW**: these are provisional nearby reference positions,
-not surveyed or visually confirmed entrance coordinates. RIO02 is the lower railway
-station at Cosme Velho, not the Christ statue. RIO03 is the lower cable car station,
-not the summit. Distances ignore street routes, railway/cable car paths and altitude.
-Official address sources and coordinate provenance are in `data/locations.json`.
+RIO02 now represents the **Christ statue itself**, using OSM monument node
+4919986733. RIO03 now represents the **Sugarloaf summit**, using OSM peak node
+34582421; the lower Praia Vermelha cable car station is no longer included.
+The previous Cosme Velho reference is preserved as **RIO04** with unchanged
+coordinates. RIO01, Copacabana Palace, is unchanged.
 
-## Quick start on Windows / PyCharm
+These mapped feature positions identify the monuments themselves, but are not
+survey-grade exact coordinates. The hotel and lower station remain approximate
+access references. QGIS visual review and independent numerical comparison are
+pending. Per-location status and source provenance are recorded in `data/locations.json`.
 
-1. Download/extract the repository and open the `rio` folder.
-2. Double-click **RUN_DASHBOARD.cmd** (Python 3.12 required). First setup installs dependencies.
-3. After setup, double-click **RUN_API.cmd** and keep that window open.
-4. Click **Compare with local API** in the English dashboard.
+### Migration from v1
 
-The dashboard also runs without starting the API. Select origin/destination IDs
-and click **Calculate selected pair**. Three tabs show the distance dashboard,
-access points/evidence, and API comparison. Export CSV/GeoJSON or save a chart as PNG.
-The coordinate overview has no street basemap; it is not a QGIS screenshot.
+Dataset version: `rio-v2-four-locations`. RIO02 and RIO03 changed coordinates and
+meaning; old v1 comparisons and images cannot serve as v2 references. RIO04 is new.
+Refresh all exported GeoJSON/CSV and rerun comparisons after upgrading. The API
+remains on port 8002. Previous data are retained in the repository history.
 
-Alternatively, from this `rio` folder:
+## Run on Windows / PyCharm
+
+Download/extract the repository and open the **rio** folder. Double-click
+`RUN_DASHBOARD.cmd` (Python 3.12 required); once setup completes, start
+`RUN_API.cmd` in a separate window. Keep the API running for comparisons.
+
+Or run from the `rio` folder:
 
 ```powershell
 py -3.12 -m venv .venv312
@@ -39,101 +44,127 @@ py -3.12 -m venv .venv312
 .\.venv312\Scripts\python.exe main.py
 ```
 
-In another terminal in the same folder:
+In a second terminal, in that same folder:
 
 ```powershell
 .\.venv312\Scripts\python.exe api.py
 ```
 
-Or use `.\.venv312\Scripts\python.exe -m uvicorn api:app --host 127.0.0.1 --port 8002`.
-Run `api.py` directly in PyCharm using the same environment. Open this folder as
-the project to avoid importing the root or Paris modules with the same names.
+API documentation: http://127.0.0.1:8002/docs. Ctrl+C stops the API.
+Alternatively: `python -m uvicorn api:app --host 127.0.0.1 --port 8002`.
+Rio uses port 8002; Paris uses 8001 and the regional exercise uses 8000.
+Open `rio/` as the PyCharm project so modules from other exercises are not imported.
+Tkinter accompanies standard Windows Python installations; Linux may need python3-tk.
+The dashboard works offline after dependency installation, without starting the API.
 
-**Rio uses port 8002**, Paris uses 8001, the regional exercise uses 8000.
-Documentation: http://127.0.0.1:8002/docs. Stop the server with Ctrl+C.
-Python for Windows normally includes Tkinter; Linux may require python3-tk.
 Portuguese instructions: [LEIA_ME.md](LEIA_ME.md).
+
+## Dashboard
+
+- Choose any two of the four IDs and calculate the selected pair.
+- The coordinate overview draws all **six connections**, and the chart/table list all six distances.
+- Locations & Evidence shows each source, coordinate, point type and coordinate status.
+- Export CSV + GeoJSON writes four result files in the chosen directory.
+- Save chart as PNG exports the current coordinate chart.
+- Reload coordinates refreshes data, selectors, counts and charts; previous comparisons clear.
+- Compare with local API checks the complete dataset and all six pair results.
+
+This chart is a coordinate plot without a street basemap, not a QGIS screenshot.
+The plotted and exported line geometries sample the ellipsoidal geodesic.
+
+## Six pairwise results
+
+These values apply to the coordinates recorded above; they exclude all altitude
+and transport paths. Extra decimal places do not imply positional accuracy.
+
+| Pair | Distance (m) | Distance (km) |
+|---|---:|---:|
+| RIO01 – RIO02 | 3669.395 | 3.669395 |
+| RIO01 – RIO03 | 3009.670 | 3.009670 |
+| RIO01 – RIO04 | 3565.505 | 3.565505 |
+| RIO02 – RIO03 | 5575.656 | 5.575656 |
+| RIO02 – RIO04 | 1753.597 | 1.753597 |
+| RIO03 – RIO04 | 4453.059 | 4.453059 |
+
+In particular, **RIO02–RIO04** is the ellipsoidal separation between the Christ
+monument and Cosme Velho lower station, **not the length of the railway**.
 
 ## API
 
 | Endpoint | Purpose |
 |---|---|
-| GET `/health` | Status and dataset version |
-| GET `/points` | Dataset metadata and three points; alias of `/locations` |
-| GET `/distances` | All three pairs with source coordinates and metadata |
-| GET `/distance?from_id=RIO01&to_id=RIO02` | One known pair |
-| POST `/distance` | A pair of IDs, as in Paris, or custom coordinates |
-| GET `/geojson/points` | Three Point features |
-| GET `/geojson/geodesics` | Three sampled geodesic lines |
+| GET `/health` | Status, version, four locations and six-pair count |
+| GET `/points`, GET `/locations` | Coordinates, individual provenance and dataset metadata |
+| GET `/distances` | All six pairs, coordinates, method and counts |
+| GET `/distance?from_id=RIO02&to_id=RIO04` | One selected pair |
+| POST `/distance` | IDs or custom coordinates |
+| GET `/geojson/points` | Four Point features |
+| GET `/geojson/geodesics` | Six sampled geodesic lines |
 
-Paris-style POST body:
+POST example for station-to-monument separation:
 
 ```json
-{"origin": "RIO01", "destination": "RIO02"}
+{"origin": "RIO04", "destination": "RIO02"}
 ```
 
-Custom coordinate POST body:
+Custom-coordinate body:
 
 ```json
 {
-  "origin": {"latitude": -22.9670, "longitude": -43.1786},
-  "destination": {"latitude": -22.9406, "longitude": -43.1985}
+  "origin": {"latitude": -22.9406, "longitude": -43.1985},
+  "destination": {"latitude": -22.9519173, "longitude": -43.2104585}
 }
 ```
 
-Unknown IDs return 404; invalid POST input returns 422. Same-ID POST requests
-return 422; GET/custom-coordinate requests can return zero distance. The API binds
-to localhost and does not edit the dataset.
+Unknown IDs return 404; invalid POST input or same-ID POST requests return 422.
+GET/custom-coordinate requests can return zero distance. The API is local and read-only.
 
-## Method and comparison
+## Calculation and QGIS comparison
 
-`core.py` uses `Geodesic.WGS84.Inverse(...)["s12"]` from GeographicLib, in meters.
-Like Paris, this solves the inverse geodesic problem on the WGS 84 ellipsoid.
-Paris uses PyProj; Rio uses GeographicLib. No spherical Haversine approximation,
-centroids or projected planar lengths are used. GeographicLib samples each line
-for the coordinate chart and GeoJSON output.
+The shared engine uses GeographicLib `Geodesic.WGS84.Inverse(...)["s12"]`, in meters.
+It generates every unordered pair with `itertools.combinations`; counts and chart
+connections follow the loaded data. No centroids, spherical Haversine approximation,
+projected planar length, street routing, railway/cable car path or altitude is used.
 
-`data/locations.json` is the single coordinate source. After edits, increment
-`dataset_version`, then use **Reload coordinates**. The API reloads that JSON
-per request. The API comparison checks version, coordinates, CRS, ellipsoid,
-status and all three pair results, with a 0.01 m numerical tolerance. The desktop
-and API share the calculation engine: agreement checks integration and consistency,
-not independent geodetic accuracy. Decimal places do not imply positional accuracy.
+Desktop/API agreement checks shared-engine integration, not independent geodetic
+or positional validation. The comparison checks source data, version, status,
+CRS, ellipsoid and all pairs. Its 0.01 m tolerance is numerical, not positional accuracy.
 
-For the QGIS stage:
+For the next QGIS stage:
 
-1. Export/import `rio_points.geojson` (EPSG:4326; order: longitude, latitude).
-2. Visually review and adjust the three access references on a suitable basemap.
-   Update `data/locations.json` with final coordinates, provenance and review date;
-   change its status only after review. Reload/re-export before comparing.
-3. Set QGIS measurement ellipsoid to WGS 84 and distance units to meters.
-4. Record all three independently calculated ellipsoidal distances, with exactly
-   the same coordinates. Compare to `python_distances.csv`.
-5. Use a numerical tolerance consistent with displayed rounding; 0.01 m is suitable
-   for unrounded values with matching coordinates/method. It is not positional accuracy.
+1. Open `data/rio_entrances.geojson` (four mixed monument/access points, historical filename)
+   or export `rio_points.geojson` from the dashboard. CRS: EPSG:4326. Order: longitude, latitude.
+2. Review all four references on an appropriate basemap and record review provenance.
+3. If editing coordinates, update `data/locations.json`, increment the dataset version,
+   reload and regenerate exports before comparing. API requests reread the JSON.
+4. Set the QGIS measurement ellipsoid to WGS 84 and distance units to meters.
+5. Independently record all six pair distances using exactly the same coordinates.
+   Compare to `python_distances.csv`, with a tolerance consistent with rounding.
 
-**QGIS reference values: pending.** No QGIS measurements, actual QGIS screenshots,
-or full workflow validation are claimed. Add actual screenshots under `assets/`
-after running that stage; the final LinkedIn post/images follow validation.
+No QGIS reference distances have been entered; the comparison remains pending.
+Actual project screenshots and the final LinkedIn post follow local verification.
 
-## Tests and files
+## Validation
 
 ```powershell
 .\.venv312\Scripts\python.exe -m pip install -r requirements-dev.txt
 .\.venv312\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
-Tests cover a known equatorial distance, symmetry, zero distance, triangle
-inequality, invalid/nonfinite coordinates, exports, request validation, point
-endpoints, ID/coordinate requests and desktop/API results. Full window interaction
-still needs a local Windows run. See `VALIDATION.txt` for checks performed.
+Tests cover all six unique pairs, four point roles, preserved Cosme Velho position,
+all four three-point triangle inequalities, six rendered connections, four markers,
+six bars, export counts, API counts and new RIO04 requests in both directions,
+plus existing numerical and invalid-input checks. See `VALIDATION.txt`.
 
-- `main.py`: English desktop dashboard, pair selection and live HTTP comparison.
-- `api.py`: local FastAPI service.
-- `core.py`: shared distance engine and exports.
-- `data/locations.json`: coordinates and evidence notes.
-- `data/rio_entrances.geojson`: generated QGIS starter snapshot; regenerate after coordinate edits.
-- `tests/`: automated checks.
+## Files
+
+- `main.py`: English desktop UI and live API comparison.
+- `plotting.py`: shared figure renderer, usable without a desktop for verification.
+- `core.py`: distance engine, dataset loading and exports.
+- `api.py`: FastAPI on port 8002.
+- `data/locations.json`: authoritative coordinates and provenance.
+- `data/rio_entrances.geojson`: four-point starter snapshot (legacy filename).
+- `data/rio_geodesics.geojson`: all six geodesic lines, generated from the same dataset.
+- `tests/`: automated tests.
 - `RUN_DASHBOARD.cmd`, `RUN_API.cmd`: Windows launchers.
-- `assets/`: future genuine QGIS captures; none included yet.
-- `SOURCES.md`: sources and approximation notes.
+- `SOURCES.md`: source and approximation notes.

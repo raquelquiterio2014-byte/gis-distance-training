@@ -32,8 +32,8 @@ def load_dataset(path=DATA_FILE):
     if dataset['crs'] != 'EPSG:4326' or dataset['ellipsoid'] != 'WGS84':
         raise ValueError('Dataset must use EPSG:4326 and WGS84')
     locations = dataset['locations']
-    if len(locations) != 3 or len({p['id'] for p in locations}) != 3:
-        raise ValueError('Exactly three locations with distinct IDs are required')
+    if len(locations) < 2 or len({p['id'] for p in locations}) != len(locations):
+        raise ValueError('At least two locations with distinct IDs are required')
     for point in locations:
         validate_coordinate(point['latitude'], point['longitude'])
     return dataset
@@ -53,6 +53,8 @@ def result_bundle(dataset):
     return {'dataset_version': dataset['dataset_version'], 'crs': dataset['crs'],
             'ellipsoid': dataset['ellipsoid'], 'method': METHOD,
             'coordinate_status': dataset['coordinate_status'],
+            'location_count': len(dataset['locations']),
+            'pair_count': len(dataset['locations']) * (len(dataset['locations']) - 1) // 2,
             'note': dataset['note'], 'locations': dataset['locations'],
             'distances': all_distances(dataset)}
 
@@ -61,7 +63,7 @@ def points_geojson(dataset):
     return {'type': 'FeatureCollection', 'features': [
         {'type': 'Feature', 'geometry': {'type': 'Point',
          'coordinates': [p['longitude'], p['latitude']]},
-         'properties': {**p, 'coordinate_status': dataset['coordinate_status'],
+         'properties': {**p, 'dataset_coordinate_status': dataset['coordinate_status'],
                         'dataset_version': dataset['dataset_version']}}
         for p in dataset['locations']]}
 

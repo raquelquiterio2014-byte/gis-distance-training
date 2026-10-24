@@ -1,28 +1,47 @@
-# Sources and limitations
+# Sources — Rio v2 (four locations)
 
-Official sources confirm addresses/access descriptions, not surveyed door coordinates:
+## Monument and summit coordinates
 
-- Copacabana Palace, Avenida Atlantica 1702: https://www.belmond.com/pt-br/hotels/south-america/brazil/copacabana-palace-rio-de-janeiro/faqs
-- Trem do Corcovado, Rua Cosme Velho 513: https://www.tremdocorcovado.rio/institucional/como-chegar
-- Parque Bondinho, Avenida Pasteur 520: https://www.bondinho.com.br/perguntas-frequentes
+Retrieved directly from the OSM API on 2026-10-24:
 
-Provisional location references consulted on 2026-10-24:
+- Christ the Redeemer monument: https://www.openstreetmap.org/node/4919986733
+  API: https://api.openstreetmap.org/api/0.6/node/4919986733.json
+  Node version 33, latitude -22.9519173, longitude -43.2104585.
+- Sugarloaf Mountain summit: https://www.openstreetmap.org/node/34582421
+  API: https://api.openstreetmap.org/api/0.6/node/34582421.json
+  Node version 47, natural=peak, latitude -22.9494891, longitude -43.1561568.
 
-- Hotel location: https://en.wikipedia.org/wiki/Copacabana_Palace
-- Cosme Velho station: https://mapcarta.com/pt/W59988621
-- Praia Vermelha station: https://mapcarta.com/pt/W94053123
+These are the mapped positions of the requested monument and summit, not the lower
+transport stations. They are not survey-grade exact coordinates or validated ground
+control points. All altitude metadata is excluded from this exercise.
 
-The station references are rounded from Mapcarta, based on OpenStreetMap.
-© OpenStreetMap contributors, Open Database License: https://www.openstreetmap.org/copyright
-The hotel point is an approximate nearby front-access reference based on the hotel
-location, not a door coordinate extracted from a verified entrance feature.
-All three references still require visual review and a recorded coordinate source.
-Do not describe them as user-digitized QGIS entrances or field measurements yet.
+© OpenStreetMap contributors. Open Database License:
+https://www.openstreetmap.org/copyright
 
-Technical documentation:
+## Unchanged approximate access references
+
+- RIO01: Copacabana Palace, Avenida Atlantica 1702. Official address:
+  https://www.belmond.com/pt-br/hotels/south-america/brazil/copacabana-palace-rio-de-janeiro/faqs
+  The retained point (-22.9670, -43.1786) is a provisional front-access reference
+  based on the hotel location: https://en.wikipedia.org/wiki/Copacabana_Palace
+  The entrance still requires visual review; the address does not validate coordinates.
+- RIO04: Cosme Velho lower train station, Rua Cosme Velho 513:
+  https://www.tremdocorcovado.rio/institucional/como-chegar
+  Retained coordinates (-22.9406, -43.1985), rounded from station reference:
+  https://mapcarta.com/pt/W59988621
+
+## Change from v1
+
+RIO02 previously referred to Cosme Velho; the unchanged station position now belongs
+to RIO04. RIO02 now means the Christ statue itself. RIO03 changes from the Praia
+Vermelha lower cable car station to the Sugarloaf summit. RIO01 is unchanged.
+Previous three-point visualizations and reference comparisons describe v1 only.
+The dataset version changed to rio-v2-four-locations. QGIS review remains pending.
+
+## Technical references
 
 - https://geographiclib.sourceforge.io/html/python/examples.html
 - https://geographiclib.sourceforge.io/html/python/code.html
 - https://fastapi.tiangolo.com/tutorial/first-steps/
 
-The code/data workflow is educational and excludes routing and altitude.
+This educational workflow calculates ellipsoidal separations, not routes or 3D lengths.

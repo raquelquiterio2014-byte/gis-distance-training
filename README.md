@@ -6,12 +6,12 @@ This is an educational project, separate from the official ERA Energy project. T
 
 ## Rio de Janeiro — QGIS → Python → FastAPI
 
-The [Rio project](rio/README.md) adds approximate access references for Copacabana Palace, the Cosme Velho train station used to access Christ the Redeemer, and the Praia Vermelha cable car station. It includes an English desktop dashboard, local FastAPI, pair selection, CSV/GeoJSON/PNG exports, and a shared-engine API comparison.
+The [Rio project](rio/README.md) now includes **four locations and six geodesic pairs**: Copacabana Palace, the Christ the Redeemer monument, the Sugarloaf summit, and the separately retained Cosme Velho train station (RIO04). It includes an English desktop dashboard, local FastAPI, pair selection, CSV/GeoJSON/PNG exports, and a shared-engine API comparison.
 
 - Open `rio/` and run `RUN_DASHBOARD.cmd`, then `RUN_API.cmd` on Windows.
 - Rio API documentation: http://127.0.0.1:8002/docs (Paris remains on port 8001).
 - Tests from `rio/`: `python -m unittest discover -s tests -v`.
-- **Status: approximate coordinates pending visual QGIS review.** No Rio QGIS reference measurements or verified entrance coordinates are claimed. Images and the final LinkedIn post are planned after validation.
+- **Status: cartographic references pending visual QGIS review.** Monument/summit points use mapped OSM features; access references remain approximate. No field-surveyed coordinates or Rio QGIS reference measurements are claimed. Images and the final LinkedIn post are planned after validation.
 
 ## Paris landmarks — QGIS → Python → FastAPI
 

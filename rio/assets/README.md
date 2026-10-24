@@ -1,4 +1,5 @@
-# QGIS evidence — pending
+# QGIS evidence — Rio v2
 
-Add the user's actual Rio QGIS captures after visually reviewing the access points.
-No Rio QGIS screenshot, street basemap or final project image has been produced yet.
+Add genuine user captures for the four-location dataset after QGIS review.
+No v2 QGIS measurements or validated positional accuracy are claimed.
+Earlier three-point promotional images describe v1, not this version.

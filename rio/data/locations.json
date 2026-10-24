@@ -1,36 +1,59 @@
 {
-  "dataset_version": "rio-v1-draft",
+  "dataset_version": "rio-v2-four-locations",
   "crs": "EPSG:4326",
   "ellipsoid": "WGS84",
-  "coordinate_status": "APPROXIMATE_PENDING_QGIS_REVIEW",
-  "note": "Provisional access reference points, not surveyed entrances. Verify visually in QGIS before final comparison. No altitude or transport routes.",
+  "coordinate_status": "CARTOGRAPHIC_REFERENCES_PENDING_QGIS_REVIEW",
+  "note": "Four reference locations: Copacabana Palace, Christ monument on Corcovado, Sugarloaf summit and Cosme Velho train station. Monument/summit coordinates are mapped OSM feature positions, not survey-grade exact coordinates. No altitude, streets, railway or cable car route lengths. QGIS numerical comparison is pending.",
   "locations": [
     {
       "id": "RIO01",
       "name": "Copacabana Palace — Main Entrance",
-      "latitude": -22.9670,
+      "latitude": -22.967,
       "longitude": -43.1786,
       "access_note": "Approximate front entrance reference, Avenida Atlantica 1702. Entrance position still requires visual review.",
       "source_url": "https://www.belmond.com/pt-br/hotels/south-america/brazil/copacabana-palace-rio-de-janeiro/faqs",
-      "coordinate_basis": "Provisional nearby reference based on published hotel location (-22.966944, -43.178611); not a verified entrance coordinate."
+      "coordinate_basis": "Provisional nearby reference based on published hotel location (-22.966944, -43.178611); not a verified entrance coordinate.",
+      "point_type": "hotel_access_reference",
+      "coordinate_status": "APPROXIMATE_ACCESS_PENDING_QGIS_REVIEW"
     },
     {
       "id": "RIO02",
-      "name": "Christ the Redeemer — Cosme Velho Train Access",
-      "latitude": -22.9406,
-      "longitude": -43.1985,
-      "access_note": "Lower train station access, Rua Cosme Velho 513. This is not the statue on the summit.",
-      "source_url": "https://www.tremdocorcovado.rio/institucional/como-chegar",
-      "coordinate_basis": "Rounded station reference: https://mapcarta.com/pt/W59988621 ; exact entrance pending review."
+      "name": "Christ the Redeemer — Monument",
+      "latitude": -22.9519173,
+      "longitude": -43.2104585,
+      "point_type": "monument",
+      "coordinate_status": "MAPPED_FEATURE_NOT_FIELD_SURVEYED",
+      "access_note": "The Christ statue itself on Corcovado; distinct from the lower train station RIO04.",
+      "source_url": "https://www.openstreetmap.org/node/4919986733",
+      "coordinate_basis": "OSM monument node 4919986733, version 33; latitude/longitude retrieved from the OSM API on 2026-10-24. Feature position, not a surveyed control point.",
+      "source_api_url": "https://api.openstreetmap.org/api/0.6/node/4919986733.json",
+      "source_feature_version": 33,
+      "source_checked_on": "2026-10-24"
     },
     {
       "id": "RIO03",
-      "name": "Sugarloaf Cable Car — Praia Vermelha Access",
-      "latitude": -22.9558,
-      "longitude": -43.1670,
-      "access_note": "Lower cable car station access, Avenida Pasteur 520. This is not the Sugarloaf summit.",
-      "source_url": "https://www.bondinho.com.br/perguntas-frequentes",
-      "coordinate_basis": "Rounded station reference: https://mapcarta.com/pt/W94053123 ; exact entrance pending review."
+      "name": "Sugarloaf Mountain — Summit",
+      "latitude": -22.9494891,
+      "longitude": -43.1561568,
+      "point_type": "summit",
+      "coordinate_status": "MAPPED_FEATURE_NOT_FIELD_SURVEYED",
+      "access_note": "Pao de Acucar summit/peak feature; replaces the Praia Vermelha lower cable car station. Not the Morro da Urca summit.",
+      "source_url": "https://www.openstreetmap.org/node/34582421",
+      "coordinate_basis": "OSM natural=peak node 34582421, version 47; latitude/longitude retrieved from the OSM API on 2026-10-24. Mapped summit position, not a surveyed control point.",
+      "source_api_url": "https://api.openstreetmap.org/api/0.6/node/34582421.json",
+      "source_feature_version": 47,
+      "source_checked_on": "2026-10-24"
+    },
+    {
+      "id": "RIO04",
+      "name": "Cosme Velho — Train Station Entrance",
+      "latitude": -22.9406,
+      "longitude": -43.1985,
+      "access_note": "Lower Corcovado train station access, Rua Cosme Velho 513. Retained as a separate point from the Christ monument.",
+      "source_url": "https://www.tremdocorcovado.rio/institucional/como-chegar",
+      "coordinate_basis": "Rounded station reference: https://mapcarta.com/pt/W59988621 ; exact entrance pending review.",
+      "point_type": "station_access_reference",
+      "coordinate_status": "APPROXIMATE_ACCESS_PENDING_QGIS_REVIEW"
     }
   ]
 }

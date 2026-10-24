@@ -7,7 +7,7 @@ import tkinter as tk
 import urllib.request
 import webbrowser
 from tkinter import filedialog, messagebox, ttk
-from itertools import combinations
+from plotting import draw_distance_figure
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from core import ROOT, load_dataset, all_distances, export_dataset, geodesic_coordinates
@@ -49,11 +49,11 @@ class Dashboard(tk.Tk):
         pair_controls = ttk.Frame(self, padding=(20, 0, 20, 8))
         pair_controls.pack(fill='x')
         ttk.Label(pair_controls, text='Origin:').pack(side='left')
-        self.origin = ttk.Combobox(pair_controls, state='readonly', width=10, values=['RIO01', 'RIO02', 'RIO03'])
+        self.origin = ttk.Combobox(pair_controls, state='readonly', width=10, values=[p['id'] for p in self.dataset['locations']])
         self.origin.set('RIO01')
         self.origin.pack(side='left', padx=6)
         ttk.Label(pair_controls, text='Destination:').pack(side='left')
-        self.destination = ttk.Combobox(pair_controls, state='readonly', width=10, values=['RIO01', 'RIO02', 'RIO03'])
+        self.destination = ttk.Combobox(pair_controls, state='readonly', width=10, values=[p['id'] for p in self.dataset['locations']])
         self.destination.set('RIO02')
         self.destination.pack(side='left', padx=6)
         ttk.Button(pair_controls, text='Calculate selected pair', command=self.calculate_pair).pack(side='left', padx=6)
@@ -63,13 +63,13 @@ class Dashboard(tk.Tk):
         self.points_tab = ttk.Frame(self.tabs)
         self.comparison_tab = ttk.Frame(self.tabs)
         self.tabs.add(self.overview, text='Distance Dashboard')
-        self.tabs.add(self.points_tab, text='Access Points & Evidence')
+        self.tabs.add(self.points_tab, text='Locations & Evidence')
         self.tabs.add(self.comparison_tab, text='API Comparison')
         self.figure = Figure(figsize=(11.5, 3.8), dpi=100, facecolor='white')
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.overview)
         self.canvas.get_tk_widget().pack(fill='both', expand=True)
-        self.table = ttk.Treeview(self.overview, columns=('pair', 'meters', 'km'), show='headings', height=3)
-        for column, label, width in [('pair', 'Access point pair', 650), ('meters', 'Distance (m)', 150), ('km', 'Distance (km)', 150)]:
+        self.table = ttk.Treeview(self.overview, columns=('pair', 'meters', 'km'), show='headings', height=6)
+        for column, label, width in [('pair', 'Location pair', 650), ('meters', 'Distance (m)', 150), ('km', 'Distance (km)', 150)]:
             self.table.heading(column, text=label)
             self.table.column(column, width=width, anchor='w' if column == 'pair' else 'e')
         self.table.pack(fill='x', padx=10, pady=10)
@@ -84,44 +84,26 @@ class Dashboard(tk.Tk):
         self.after(100, self.poll_results)
 
     def draw(self):
-        self.summary.set(f"{self.dataset['coordinate_status']} | 3 access references / 3 pairs | No street routes or altitude.\n"
-                         'Christ the Redeemer reference = Cosme Velho lower train station. Coordinates require QGIS review.')
+        self.summary.set(f"{self.dataset['coordinate_status']} | {len(self.dataset['locations'])} locations / {len(self.rows)} pairs | No street routes or altitude.\n"
+                         'Christ monument and Sugarloaf summit are separate from Cosme Velho station (RIO04). QGIS review pending.')
+        ids = [p['id'] for p in self.dataset['locations']]
+        self.origin.configure(values=ids)
+        self.destination.configure(values=ids)
+        if self.origin.get() not in ids:
+            self.origin.set(ids[0])
+        if self.destination.get() not in ids:
+            self.destination.set(ids[1])
+        self.table.configure(height=min(10, len(self.rows)))
         self.table.delete(*self.table.get_children())
         for row in self.rows:
             self.table.insert('', 'end', values=(f"{row['from_id']} — {row['to_id']}",
                                                 f"{row['distance_m']:,.2f}", f"{row['distance_km']:.3f}"))
-        self.figure.clear()
-        ax, bars = self.figure.subplots(1, 2, gridspec_kw={'width_ratios': [1.15, 1]})
-        colors = ['#168d9d', '#e49636', '#7857b6']
-        for (a, b), color in zip(combinations(self.dataset['locations'], 2), colors):
-            coords = geodesic_coordinates(a, b)
-            ax.plot([p[0] for p in coords], [p[1] for p in coords], '--', color=color, linewidth=1.8)
-        for p in self.dataset['locations']:
-            ax.scatter(p['longitude'], p['latitude'], s=65, color='#12334b', zorder=3)
-            ax.annotate(p['id'], (p['longitude'], p['latitude']), xytext=(6, 8), textcoords='offset points')
-        ax.set_aspect(1 / math.cos(math.radians(-22.95)))
-        ax.margins(0.2)
-        ax.set_title('Access references — coordinate overview', fontsize=11)
-        ax.set_xlabel('Longitude (degrees)')
-        ax.set_ylabel('Latitude (degrees)')
-        ax.ticklabel_format(useOffset=False, style='plain')
-        ax.tick_params(labelsize=8)
-        ax.grid(alpha=0.2)
-        labels = [f"{r['from_id']} / {r['to_id']}" for r in self.rows]
-        values = [r['distance_km'] for r in self.rows]
-        bars.barh(labels, values, color=colors)
-        bars.set_xlim(0, max(values) * 1.3)
-        for i, value in enumerate(values):
-            bars.text(value + 0.04, i, f'{value:.3f} km', va='center', fontsize=10)
-        bars.set_xlabel('Ellipsoidal geodesic distance (km)')
-        bars.set_title('Three pairwise distances', fontsize=11)
-        self.figure.text(0.02, 0.015, 'Coordinate overview only; no basemap. Dashed lines show geodesics, not travel routes.', fontsize=8, color='#526474')
-        self.figure.tight_layout(rect=(0, 0.04, 1, 1))
+        draw_distance_figure(self.figure, self.dataset)
         self.canvas.draw()
         sections = [f"Dataset: {self.dataset['dataset_version']}\nCRS: EPSG:4326 | Ellipsoid: WGS 84\nStatus: {self.dataset['coordinate_status']}\n"]
         for p in self.dataset['locations']:
             sections.append(f"{p['id']} | {p['name']}\nLatitude: {p['latitude']:.6f} | Longitude: {p['longitude']:.6f}\n"
-                            f"{p['access_note']}\nSource: {p['source_url']}\nCoordinate basis: {p['coordinate_basis']}\n")
+                            f"Point type: {p.get('point_type', 'reference')} | {p.get('coordinate_status', self.dataset['coordinate_status'])}\n{p['access_note']}\nSource: {p['source_url']}\nCoordinate basis: {p['coordinate_basis']}\n")
         self.set_text(self.points_text, '\n'.join(sections))
         self.set_text(self.comparison_text, 'Not compared yet. Start api.py, then click Compare with local API.\n'
                       'This checks API transport and dataset consistency using the shared engine.\n'
@@ -147,10 +129,10 @@ class Dashboard(tk.Tk):
     def calculate_pair(self):
         origin, destination = self.origin.get(), self.destination.get()
         if origin == destination:
-            messagebox.showwarning('Select a pair', 'Select two different access points.')
+            messagebox.showwarning('Select a pair', 'Select two different locations.')
             return
         row = next(r for r in self.rows if {r['from_id'], r['to_id']} == {origin, destination})
-        self.status.set(f"{origin} / {destination}: {row['distance_m']:,.3f} m | {row['distance_km']:.3f} km. Approximate access references.")
+        self.status.set(f"{origin} / {destination}: {row['distance_m']:,.3f} m | {row['distance_km']:.3f} km. Cartographic reference locations; no route or altitude.")
         self.tabs.select(self.overview)
         self.table.selection_set(self.table.get_children()[self.rows.index(row)])
 
@@ -189,7 +171,7 @@ class Dashboard(tk.Tk):
                         raise ValueError(f'Dataset mismatch: {key}. Reload coordinates and check API project folder.')
                 remote = {(r['from_id'], r['to_id']): r['distance_m'] for r in payload['distances']}
                 expected = {(r['from_id'], r['to_id']) for r in rows}
-                if set(remote) != expected or len(payload['distances']) != 3:
+                if set(remote) != expected or len(payload['distances']) != len(rows):
                     raise ValueError('API pair set differs from the dashboard.')
                 lines = ['LOCAL PYTHON / FASTAPI COMPARISON', 'Numerical tolerance: 0.01 m\n']
                 passed = True
@@ -200,14 +182,19 @@ class Dashboard(tk.Tk):
                     passed = passed and ok
                     lines.append(f"{key[0]} / {key[1]}: delta = {delta:.6f} m | {'PASS' if ok else 'FAIL'}")
                 lines.append('\nShared calculation engine; this is a consistency check.\nIndependent QGIS comparison: PENDING.')
-                self.results_queue.put(('PASS' if passed else 'FAIL', '\n'.join(lines)))
+                self.results_queue.put((dataset, 'PASS' if passed else 'FAIL', '\n'.join(lines)))
             except Exception as exc:
-                self.results_queue.put(('ERROR', f'API comparison failed: {exc}\n\nStart api.py in this project and try again.'))
+                self.results_queue.put((dataset, 'ERROR', f'API comparison failed: {exc}\n\nStart api.py in this project and try again.'))
         threading.Thread(target=worker, daemon=True).start()
 
     def poll_results(self):
         try:
-            status, report = self.results_queue.get_nowait()
+            snapshot, status, report = self.results_queue.get_nowait()
+            if snapshot is not self.dataset:
+                self.compare_button.configure(state='normal')
+                self.status.set('Dataset changed during comparison; compare again.')
+                self.after(100, self.poll_results)
+                return
             self.set_text(self.comparison_text, report)
             self.tabs.select(self.comparison_tab)
             self.status.set(f'API comparison: {status}. QGIS comparison remains pending.')

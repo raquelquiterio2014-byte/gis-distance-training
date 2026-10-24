@@ -3,8 +3,8 @@ from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, ConfigDict, Field
 from core import load_dataset, result_bundle, pair_result, distance_m, points_geojson, lines_geojson
 
-app = FastAPI(title='Rio de Janeiro GIS Distance Training', version='1.0.0',
-              description='Approximate access references. WGS 84 ellipsoidal geodesics; no routes or altitude.')
+app = FastAPI(title='Rio de Janeiro GIS Distance Training', version='2.0.0',
+              description='Four mapped reference locations: Christ monument, Sugarloaf summit, Copacabana Palace and Cosme Velho station. WGS 84 ellipsoidal geodesics; no routes or altitude.')
 
 
 class Coordinate(BaseModel):
@@ -28,7 +28,9 @@ class SiteDistanceRequest(BaseModel):
 @app.get('/health')
 def health():
     dataset = load_dataset()
-    return {'status': 'ok', 'dataset_version': dataset['dataset_version']}
+    return {'status': 'ok', 'dataset_version': dataset['dataset_version'],
+            'location_count': len(dataset['locations']),
+            'pair_count': len(dataset['locations']) * (len(dataset['locations']) - 1) // 2}
 
 
 @app.get('/locations')
@@ -59,7 +61,7 @@ def distance(from_id: str = Query(...), to_id: str = Query(...)):
 def custom_distance(request: SiteDistanceRequest | DistanceRequest):
     if isinstance(request, SiteDistanceRequest):
         if request.origin == request.destination:
-            raise HTTPException(status_code=422, detail='Select two different access points.')
+            raise HTTPException(status_code=422, detail='Select two different locations.')
         return distance(request.origin, request.destination)
     meters = distance_m(request.origin.latitude, request.origin.longitude,
                         request.destination.latitude, request.destination.longitude)
