@@ -1,0 +1,9 @@
+Python 3.12 validation
+14 unittest tests: PASS
+Live Uvicorn via api.py on port 8002: GET /distances and /points PASS (3 pairs / 3 points)
+main.py / api.py / core.py: compile PASS
+Dashboard module import: PASS
+Desktop visual verification: NOT RUN (no graphical display available).
+QGIS comparison: PENDING
+Coordinates: APPROXIMATE_PENDING_QGIS_REVIEW
+Dependencies used: FastAPI 0.162.0, Uvicorn 0.54.0, GeographicLib 2.1, Matplotlib 3.10.8, httpx 0.28.1.

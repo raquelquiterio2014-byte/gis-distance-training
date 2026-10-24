@@ -1,0 +1,68 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -43.1786,
+          -22.967
+        ]
+      },
+      "properties": {
+        "id": "RIO01",
+        "name": "Copacabana Palace — Main Entrance",
+        "latitude": -22.967,
+        "longitude": -43.1786,
+        "access_note": "Approximate front entrance reference, Avenida Atlantica 1702. Entrance position still requires visual review.",
+        "source_url": "https://www.belmond.com/pt-br/hotels/south-america/brazil/copacabana-palace-rio-de-janeiro/faqs",
+        "coordinate_basis": "Provisional nearby reference based on published hotel location (-22.966944, -43.178611); not a verified entrance coordinate.",
+        "coordinate_status": "APPROXIMATE_PENDING_QGIS_REVIEW",
+        "dataset_version": "rio-v1-draft"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -43.1985,
+          -22.9406
+        ]
+      },
+      "properties": {
+        "id": "RIO02",
+        "name": "Christ the Redeemer — Cosme Velho Train Access",
+        "latitude": -22.9406,
+        "longitude": -43.1985,
+        "access_note": "Lower train station access, Rua Cosme Velho 513. This is not the statue on the summit.",
+        "source_url": "https://www.tremdocorcovado.rio/institucional/como-chegar",
+        "coordinate_basis": "Rounded station reference: https://mapcarta.com/pt/W59988621 ; exact entrance pending review.",
+        "coordinate_status": "APPROXIMATE_PENDING_QGIS_REVIEW",
+        "dataset_version": "rio-v1-draft"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -43.167,
+          -22.9558
+        ]
+      },
+      "properties": {
+        "id": "RIO03",
+        "name": "Sugarloaf Cable Car — Praia Vermelha Access",
+        "latitude": -22.9558,
+        "longitude": -43.167,
+        "access_note": "Lower cable car station access, Avenida Pasteur 520. This is not the Sugarloaf summit.",
+        "source_url": "https://www.bondinho.com.br/perguntas-frequentes",
+        "coordinate_basis": "Rounded station reference: https://mapcarta.com/pt/W94053123 ; exact entrance pending review.",
+        "coordinate_status": "APPROXIMATE_PENDING_QGIS_REVIEW",
+        "dataset_version": "rio-v1-draft"
+      }
+    }
+  ]
+}
