@@ -2,17 +2,20 @@
 
 Hands-on GIS learning with **QGIS and Python**, using European regional polygons to calculate and compare distances between geometric centroids.
 
-This is an educational project, separate from the official ERA Energy project. The current release is a **Python desktop application** with a Portuguese interface, run locally through PyCharm. FastAPI is planned and is not implemented yet.
+This is an educational project, separate from the official ERA Energy project. The current release is a **Python desktop application** with an English interface, run locally through PyCharm. Phase 3 adds a local FastAPI service and a desktop API comparison tab.
 
 ## Desktop application
 
-![Map and results](docs/screenshots/map-results.png)
+The screenshots below document the earlier Phase 2 interface in Portuguese. The current Phase 3 dashboard, API descriptions, code messages, and generated maps are in English.
+
+![Phase 2 map and results](docs/screenshots/map-results.png)
 
 - Load the included 299 NUTS 2024 level 2 regions, or a compatible polygon GeoJSON.
 - Select two regions and display their polygons, centroids, and geodesic connection.
 - Compare FR10–FRF3 against the recorded QGIS reference.
 - Export a JSON report, GeoJSON points and line, and a PNG map.
 - Explore offline map images and the calculation workflow.
+- Compare the current desktop result with a live FastAPI response in the **API comparison** tab.
 
 <details>
 <summary>Map gallery and methodology screenshots</summary>
@@ -43,6 +46,42 @@ Tkinter is included with standard Windows Python installations when Tcl/Tk is en
 
 Portuguese instructions: [LEIA_ME.md](LEIA_ME.md).
 
+## Phase 3: start FastAPI
+
+In a second PyCharm terminal, use the same Python environment and repository root:
+
+```bash
+python -m uvicorn api:app --host 127.0.0.1 --port 8000
+```
+
+Keep that terminal running. Open http://127.0.0.1:8000/docs for the interactive API documentation.
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /health` | Service status and loaded region count |
+| `GET /regions` | Available identifiers and region names |
+| `POST /distance` | Calculate distance for the requested region pair |
+
+In `/docs`, expand **POST /distance**, choose **Try it out**, and submit:
+
+```json
+{"origin": "FR10", "destination": "FRF3"}
+```
+
+Expected distance: approximately **267492.772273 m**. Unknown identifiers return HTTP 404; invalid requests or the same region return HTTP 422.
+
+Start `main.py`, calculate a pair, then open **API comparison** and select **Compare API with current desktop result**. The app checks the distance, centroid coordinates, identifiers, CRS, ellipsoid, and method; for FR10–FRF3 it also shows the API difference from the recorded QGIS result.
+
+The API always uses the bundled dataset. A custom desktop dataset may produce different results. This comparison checks HTTP integration and shared calculation consistency, not an independent geodetic method or territorial accuracy.
+
+You can also check a running server without opening the desktop:
+
+```bash
+python verify_api.py
+```
+
+Stop the server with **Ctrl+C**. No hosting account, API key, or QGIS installation is needed. The server binds to localhost by default.
+
 ## Calculation and reference result
 
 1. Read WGS 84 polygon coordinates from GeoJSON.
@@ -72,31 +111,35 @@ Recorded QGIS reference: **267492.77227324113 m**, approximately **267.49 km**. 
 python -m unittest -v
 ```
 
-Five existing tests cover the QGIS reference, reversed endpoints and same-region rejection, invalid coordinates, GeoJSON export structure, and rejected input.
+Twelve tests cover the calculation core and API contract: QGIS agreement, desktop/API coordinates, reversed endpoints, another region pair, health/list endpoints, missing and extra request fields, unknown codes, same-region rejection, invalid coordinates, and GeoJSON export.
 
 ## Files
 
 | Path | Purpose |
 |---|---|
 | `main.py` | Tkinter interface and Matplotlib maps |
+| `api.py` | FastAPI service and request/response models |
+| `api_client.py` | Live HTTP comparison used by the desktop |
+| `verify_api.py` | Command-line check against a running API |
+| `test_api.py` | API contract and reference tests |
 | `core.py` | Data validation, centroid calculation, geodesic distance, GeoJSON export |
 | `data/NUTS_2024.geojson` | Included Eurostat GISCO NUTS 2024 level 2 data |
 | `assets/` | Map images rendered from the included polygons |
 | `docs/screenshots/` | Captures of the running desktop application |
 | `exemplo_resultado.json` | Example calculation report |
 | `test_core.py` | Calculation and validation tests |
-| `FONTES.md` | Data attribution, conditions, and technical sources |
+| `SOURCES.md` | English data attribution, conditions, and technical sources |
 
 ## Data attribution
 
 Source: **Eurostat GISCO — NUTS 2024**, level 2, 1:20 million, EPSG:4326. **© EuroGeographics** for administrative boundaries.
 
-[Official dataset](https://gisco-services.ec.europa.eu/distribution/v2/nuts/geojson/NUTS_RG_20M_2024_4326_LEVL_2.geojson) · [GISCO catalogue](https://gisco-services.ec.europa.eu/distribution/v2/nuts/nuts-2024-files.html) · [Conditions and sources](FONTES.md).
+[Official dataset](https://gisco-services.ec.europa.eu/distribution/v2/nuts/geojson/NUTS_RG_20M_2024_4326_LEVL_2.geojson) · [GISCO catalogue](https://gisco-services.ec.europa.eu/distribution/v2/nuts/nuts-2024-files.html) · [Conditions and sources](SOURCES.md).
 
 Third-party geographic data remain subject to their source conditions; inclusion here does not grant additional reuse rights.
 
 ## Next learning stages
 
-- Expose the calculation through FastAPI and compare API responses with the desktop and QGIS reference.
+- Phase 3 complete in code: local FastAPI and comparison workflow. Run it locally to inspect the English dashboard and API documentation.
 - Practice point-to-point calculations for selected landmarks.
 - Repeat with US and other geographic datasets, selecting appropriate projections and methods.

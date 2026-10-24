@@ -16,27 +16,27 @@ def load_regions(path):
     """Accept NUTS polygon GeoJSON in WGS84, not arbitrary unknown CRS."""
     obj = json.loads(Path(path).read_text(encoding='utf-8-sig'))
     if obj.get('type') != 'FeatureCollection':
-        raise ValueError('O arquivo deve ser um GeoJSON FeatureCollection.')
+        raise ValueError('The file must be a GeoJSON FeatureCollection.')
     crs = obj.get('crs', {}).get('properties', {}).get('name', '')
     if crs and not (crs.endswith('4326') or 'CRS84' in crs):
-        raise ValueError('Exporte o GeoJSON em EPSG:4326 no QGIS antes de carregar.')
+        raise ValueError('Export the GeoJSON in EPSG:4326 from QGIS before loading.')
     rows = {}
     for f in obj.get('features', []):
         p = f.get('properties') or {}
         code = p.get('NUTS_ID')
         if not code:
-            raise ValueError('Campo NUTS_ID ausente.')
+            raise ValueError('Missing NUTS_ID field.')
         if code in rows:
-            raise ValueError(f'Código repetido: {code}')
+            raise ValueError(f'Duplicate code: {code}')
         g = shape(f['geometry'])
         if g.geom_type not in ('Polygon', 'MultiPolygon') or g.is_empty or not g.is_valid:
-            raise ValueError(f'Geometria inválida ou não poligonal: {code}')
+            raise ValueError(f'Invalid or non-polygon geometry: {code}')
         a,b,c,d = g.bounds
         if not (-180 <= a <= c <= 180 and -90 <= b <= d <= 90):
-            raise ValueError('Coordenadas fora dos limites WGS84.')
+            raise ValueError('Coordinates outside WGS84 bounds.')
         rows[code] = {'name': p.get('NAME_LATN', p.get('NUTS_NAME', code)), 'country':p.get('CNTR_CODE',''), 'geometry':g}
     if len(rows) < 2:
-        raise ValueError('São necessárias pelo menos duas regiões.')
+        raise ValueError('At least two regions are required.')
     return rows
 
 def centroid(region):
@@ -47,14 +47,17 @@ def centroid(region):
 
 def distance(a,b):
     if any(not math.isfinite(v) for v in (*a,*b)):
-        raise ValueError('Coordenadas não finitas.')
+        raise ValueError('Coordinates must be finite.')
     if any(not (-180 <= p[0] <= 180 and -90 <= p[1] <= 90) for p in (a,b)):
-        raise ValueError('Longitude ou latitude fora dos limites.')
+        raise ValueError('Longitude or latitude outside valid bounds.')
     return GEOD.inv(*a,*b)[2]
 
 def calculate(regions, origin, destination):
+    for code in (origin, destination):
+        if code not in regions:
+            raise ValueError(f'Unknown region: {code}')
     if origin == destination:
-        raise ValueError('Escolha duas regiões diferentes.')
+        raise ValueError('Choose two different regions.')
     points = [centroid(regions[c]) for c in (origin,destination)]
     meters = distance(*points)
     result = {'origin':origin,'destination':destination,'origin_name':regions[origin]['name'],

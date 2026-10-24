@@ -1,0 +1,21 @@
+{
+  "phase": 3,
+  "checks": {
+    "unit_and_api_tests_passed": 12,
+    "live_http_server_checked": true,
+    "openapi_schema_checked": true,
+    "english_desktop_visual_check": "Pending local Windows run"
+  },
+  "live_http_comparison": {
+    "origin": "FR10",
+    "destination": "FRF3",
+    "api_distance_m": 267492.7722732408,
+    "desktop_distance_m": 267492.7722732408,
+    "difference_m": 0.0,
+    "coordinates_match": true,
+    "method_matches": true,
+    "qgis_reference_m": 267492.77227324113,
+    "qgis_difference_m": 3.4924596548080444e-10
+  },
+  "interpretation": "Shared engine and data; verifies numerical and HTTP integration consistency, not independent territorial accuracy."
+}

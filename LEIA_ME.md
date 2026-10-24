@@ -1,7 +1,7 @@
 # GIS Training — Python Desktop V1
 
 Treinamento paralelo e independente do projeto oficial ERA Energy.
-Interface em português para Windows / PyCharm; Python 3.12 recomendado.
+Interface em inglês para Windows / PyCharm; Python 3.12 recomendado.
 
 ## Iniciar no PyCharm
 
@@ -72,4 +72,4 @@ data/: GeoJSON oficial, sem alteração de atributos.
 assets/: imagens de mapas criadas com os dados incluídos.
 test_core.py: testes de cálculo e validação. Execute python -m unittest -v.
 
-FastAPI ficará para a próxima etapa e poderá importar core.py.
+Fase 3 implementada: consulte README.md para iniciar api.py com Uvicorn e usar a aba API comparison.
