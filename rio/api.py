@@ -1,16 +1,17 @@
 """Run in PyCharm, or: python -m uvicorn api:app --reload"""
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, ConfigDict, Field
+from validation import independent_report
 from core import load_dataset, result_bundle, pair_result, distance_m, points_geojson, lines_geojson
 
-app = FastAPI(title='Rio de Janeiro GIS Distance Training', version='2.0.0',
+app = FastAPI(title='Rio de Janeiro GIS Distance Training', version='2.1.0',
               description='Four mapped reference locations: Christ monument, Sugarloaf summit, Copacabana Palace and Cosme Velho station. WGS 84 ellipsoidal geodesics; no routes or altitude.')
 
 
 class Coordinate(BaseModel):
     model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
-    latitude: float = Field(ge=-90, le=90)
-    longitude: float = Field(ge=-180, le=180)
+    latitude: float = Field(ge=-90, le=90, strict=True)
+    longitude: float = Field(ge=-180, le=180, strict=True)
 
 
 class DistanceRequest(BaseModel):
@@ -44,6 +45,11 @@ def locations():
 @app.get('/distances')
 def distances():
     return result_bundle(load_dataset())
+
+
+@app.get('/validation')
+def numerical_validation():
+    return independent_report(load_dataset())
 
 
 @app.get('/distance')

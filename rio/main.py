@@ -1,6 +1,5 @@
 """Offline English desktop dashboard. Start the API separately with api.py."""
 import json
-import math
 import queue
 import threading
 import tkinter as tk
@@ -10,7 +9,8 @@ from tkinter import filedialog, messagebox, ttk
 from plotting import draw_distance_figure
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from core import ROOT, load_dataset, all_distances, export_dataset, geodesic_coordinates
+from core import ROOT, load_dataset, all_distances, export_dataset
+from validation import independent_report, qgis_report, write_qgis_template, compare_api_payload, format_report
 
 API_URL = 'http://127.0.0.1:8002'
 
@@ -23,6 +23,8 @@ class Dashboard(tk.Tk):
         self.minsize(1050, 760)
         self.configure(bg='#eef3f8')
         self.results_queue = queue.Queue()
+        self.last_check_report = None
+        self.qgis_status = 'PENDING'
         self.dataset = load_dataset()
         self.rows = all_distances(self.dataset)
         style = ttk.Style(self)
@@ -65,6 +67,19 @@ class Dashboard(tk.Tk):
         self.tabs.add(self.overview, text='Distance Dashboard')
         self.tabs.add(self.points_tab, text='Locations & Evidence')
         self.tabs.add(self.comparison_tab, text='API Comparison')
+        self.checks_tab = ttk.Frame(self.tabs)
+        self.tabs.add(self.checks_tab, text='Numerical & QGIS Checks')
+        check_controls = ttk.Frame(self.checks_tab, padding=10)
+        check_controls.pack(fill='x')
+        ttk.Button(check_controls, text='Run independent check', command=self.run_independent).pack(side='left', padx=4)
+        ttk.Button(check_controls, text='Save QGIS CSV template', command=self.save_qgis_template).pack(side='left', padx=4)
+        ttk.Button(check_controls, text='Import QGIS measurements', command=self.import_qgis).pack(side='left', padx=4)
+        ttk.Button(check_controls, text='Save check report', command=self.save_check_report).pack(side='left', padx=4)
+        self.checks_text = tk.Text(self.checks_tab, wrap='word', font=('Consolas', 10), padx=16, pady=16)
+        checks_scroll = ttk.Scrollbar(self.checks_tab, command=self.checks_text.yview)
+        self.checks_text.configure(yscrollcommand=checks_scroll.set)
+        checks_scroll.pack(side='right', fill='y')
+        self.checks_text.pack(fill='both', expand=True)
         self.figure = Figure(figsize=(11.5, 3.8), dpi=100, facecolor='white')
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.overview)
         self.canvas.get_tk_widget().pack(fill='both', expand=True)
@@ -86,6 +101,9 @@ class Dashboard(tk.Tk):
     def draw(self):
         self.summary.set(f"{self.dataset['coordinate_status']} | {len(self.dataset['locations'])} locations / {len(self.rows)} pairs | No street routes or altitude.\n"
                          'Christ monument and Sugarloaf summit are separate from Cosme Velho station (RIO04). QGIS review pending.')
+        self.qgis_status = 'PENDING'
+        self.last_check_report = None
+        self.set_text(self.checks_text, 'Run the independent Vincenty check or import measured QGIS distances.\nQGIS status: PENDING until actual values are supplied.\nTemplate distances are deliberately blank; fill only qgis_distance_m using meters and a decimal point.')
         ids = [p['id'] for p in self.dataset['locations']]
         self.origin.configure(values=ids)
         self.destination.configure(values=ids)
@@ -156,6 +174,54 @@ class Dashboard(tk.Tk):
             except Exception as exc:
                 messagebox.showerror('Export error', str(exc))
 
+    def run_independent(self):
+        report = independent_report(self.dataset)
+        self.last_check_report = report
+        self.set_text(self.checks_text, format_report(report, 'INDEPENDENT NUMERICAL CHECK'))
+        self.tabs.select(self.checks_tab)
+        self.status.set(f"Independent numerical check: {report['status']}. QGIS: {self.qgis_status}.")
+
+    def save_qgis_template(self):
+        path = filedialog.asksaveasfilename(title='Save QGIS measurement template',
+                    initialfile='qgis_reference_template.csv', defaultextension='.csv', filetypes=[('CSV', '*.csv')])
+        if path:
+            try:
+                write_qgis_template(self.dataset, path)
+                self.status.set('Template saved. Measure in QGIS and fill qgis_distance_m; unknown values stay blank.')
+            except Exception as exc:
+                messagebox.showerror('Template error', str(exc))
+
+    def import_qgis(self):
+        path = filedialog.askopenfilename(title='Import completed QGIS CSV template', filetypes=[('CSV', '*.csv')])
+        if path:
+            try:
+                report = qgis_report(self.dataset, path)
+                self.qgis_status = report['status']
+                self.last_check_report = report
+                self.set_text(self.checks_text, format_report(report, 'QGIS / PYTHON COMPARISON'))
+                self.tabs.select(self.checks_tab)
+                self.status.set(f"QGIS comparison: {report['status']}. Numerical agreement does not establish positional accuracy.")
+            except Exception as exc:
+                self.qgis_status = 'ERROR'
+                self.last_check_report = None
+                self.set_text(self.checks_text, f'QGIS import rejected: {exc}\nNo comparison accepted. Re-export the template for the current dataset.')
+                self.status.set('QGIS import rejected; comparison status: ERROR.')
+                messagebox.showerror('QGIS comparison error', str(exc))
+
+    def save_check_report(self):
+        if self.last_check_report is None:
+            messagebox.showinfo('No report', 'Run an independent check or import QGIS measurements first.')
+            return
+        path = filedialog.asksaveasfilename(title='Save numerical check report',
+                    defaultextension='.json', filetypes=[('JSON', '*.json')])
+        if path:
+            try:
+                from pathlib import Path
+                Path(path).write_text(json.dumps(self.last_check_report, indent=2, allow_nan=False), encoding='utf-8')
+                self.status.set('Numerical check report saved.')
+            except Exception as exc:
+                messagebox.showerror('Report export error', str(exc))
+
     def compare_api(self):
         self.compare_button.configure(state='disabled')
         self.status.set('Requesting local API...')
@@ -166,23 +232,9 @@ class Dashboard(tk.Tk):
             try:
                 with urllib.request.urlopen(API_URL + '/distances', timeout=5) as response:
                     payload = json.load(response)
-                for key in ['dataset_version', 'crs', 'ellipsoid', 'coordinate_status', 'locations']:
-                    if payload.get(key) != dataset[key]:
-                        raise ValueError(f'Dataset mismatch: {key}. Reload coordinates and check API project folder.')
-                remote = {(r['from_id'], r['to_id']): r['distance_m'] for r in payload['distances']}
-                expected = {(r['from_id'], r['to_id']) for r in rows}
-                if set(remote) != expected or len(payload['distances']) != len(rows):
-                    raise ValueError('API pair set differs from the dashboard.')
-                lines = ['LOCAL PYTHON / FASTAPI COMPARISON', 'Numerical tolerance: 0.01 m\n']
-                passed = True
-                for row in rows:
-                    key = (row['from_id'], row['to_id'])
-                    delta = abs(row['distance_m'] - remote[key])
-                    ok = math.isfinite(delta) and delta <= 0.01
-                    passed = passed and ok
-                    lines.append(f"{key[0]} / {key[1]}: delta = {delta:.6f} m | {'PASS' if ok else 'FAIL'}")
-                lines.append('\nShared calculation engine; this is a consistency check.\nIndependent QGIS comparison: PENDING.')
-                self.results_queue.put((dataset, 'PASS' if passed else 'FAIL', '\n'.join(lines)))
+                report = compare_api_payload(dataset, payload)
+                text = format_report(report, 'LOCAL PYTHON / FASTAPI COMPARISON')
+                self.results_queue.put((dataset, report['status'], text))
             except Exception as exc:
                 self.results_queue.put((dataset, 'ERROR', f'API comparison failed: {exc}\n\nStart api.py in this project and try again.'))
         threading.Thread(target=worker, daemon=True).start()
@@ -197,7 +249,7 @@ class Dashboard(tk.Tk):
                 return
             self.set_text(self.comparison_text, report)
             self.tabs.select(self.comparison_tab)
-            self.status.set(f'API comparison: {status}. QGIS comparison remains pending.')
+            self.status.set(f'API comparison: {status}. QGIS comparison: {self.qgis_status}.')
             self.compare_button.configure(state='normal')
         except queue.Empty:
             pass

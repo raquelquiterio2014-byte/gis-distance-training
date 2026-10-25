@@ -1,0 +1,77 @@
+{
+  "dataset_version": "rio-v2-four-locations",
+  "coordinate_sha256": "ac8ade4f02e935b47e0eedfc7b74d1f9cdd0968b5544b20ed6978b0d3a132f4e",
+  "primary_method": "WGS 84 ellipsoidal geodesic (GeographicLib inverse)",
+  "independent_method": "Vincenty inverse (1975), local Python math implementation",
+  "tolerance_m": 0.01,
+  "status": "PASS",
+  "note": "Independent numerical cross-check of the same coordinates; not positional or field validation.",
+  "rows": [
+    {
+      "from_id": "RIO01",
+      "to_id": "RIO02",
+      "from_name": "Copacabana Palace \u2014 Main Entrance",
+      "to_name": "Christ the Redeemer \u2014 Monument",
+      "distance_m": 3669.3948580695946,
+      "distance_km": 3.6693948580695945,
+      "independent_distance_m": 3669.3948580819965,
+      "difference_m": 1.240186975337565e-08,
+      "status": "PASS"
+    },
+    {
+      "from_id": "RIO01",
+      "to_id": "RIO03",
+      "from_name": "Copacabana Palace \u2014 Main Entrance",
+      "to_name": "Sugarloaf Mountain \u2014 Summit",
+      "distance_m": 3009.670012158368,
+      "distance_km": 3.009670012158368,
+      "independent_distance_m": 3009.6700121628774,
+      "difference_m": 4.509274731390178e-09,
+      "status": "PASS"
+    },
+    {
+      "from_id": "RIO01",
+      "to_id": "RIO04",
+      "from_name": "Copacabana Palace \u2014 Main Entrance",
+      "to_name": "Cosme Velho \u2014 Train Station Entrance",
+      "distance_m": 3565.5045385931894,
+      "distance_km": 3.5655045385931894,
+      "independent_distance_m": 3565.5045385963117,
+      "difference_m": 3.1222953111864626e-09,
+      "status": "PASS"
+    },
+    {
+      "from_id": "RIO02",
+      "to_id": "RIO03",
+      "from_name": "Christ the Redeemer \u2014 Monument",
+      "to_name": "Sugarloaf Mountain \u2014 Summit",
+      "distance_m": 5575.655853070698,
+      "distance_km": 5.575655853070698,
+      "independent_distance_m": 5575.655853102961,
+      "difference_m": 3.2263415050692856e-08,
+      "status": "PASS"
+    },
+    {
+      "from_id": "RIO02",
+      "to_id": "RIO04",
+      "from_name": "Christ the Redeemer \u2014 Monument",
+      "to_name": "Cosme Velho \u2014 Train Station Entrance",
+      "distance_m": 1753.5966793849425,
+      "distance_km": 1.7535966793849425,
+      "independent_distance_m": 1753.5966793869338,
+      "difference_m": 1.9913386495318264e-09,
+      "status": "PASS"
+    },
+    {
+      "from_id": "RIO03",
+      "to_id": "RIO04",
+      "from_name": "Sugarloaf Mountain \u2014 Summit",
+      "to_name": "Cosme Velho \u2014 Train Station Entrance",
+      "distance_m": 4453.0586712300565,
+      "distance_km": 4.453058671230057,
+      "independent_distance_m": 4453.058671253724,
+      "difference_m": 2.366778062423691e-08,
+      "status": "PASS"
+    }
+  ]
+}

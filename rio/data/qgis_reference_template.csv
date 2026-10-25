@@ -1,0 +1,7 @@
+﻿from_id,to_id,qgis_distance_m,dataset_version,coordinate_sha256,coordinate_crs,ellipsoid,measurement_method,distance_unit
+RIO01,RIO02,,rio-v2-four-locations,ac8ade4f02e935b47e0eedfc7b74d1f9cdd0968b5544b20ed6978b0d3a132f4e,EPSG:4326,WGS84,ellipsoidal,m
+RIO01,RIO03,,rio-v2-four-locations,ac8ade4f02e935b47e0eedfc7b74d1f9cdd0968b5544b20ed6978b0d3a132f4e,EPSG:4326,WGS84,ellipsoidal,m
+RIO01,RIO04,,rio-v2-four-locations,ac8ade4f02e935b47e0eedfc7b74d1f9cdd0968b5544b20ed6978b0d3a132f4e,EPSG:4326,WGS84,ellipsoidal,m
+RIO02,RIO03,,rio-v2-four-locations,ac8ade4f02e935b47e0eedfc7b74d1f9cdd0968b5544b20ed6978b0d3a132f4e,EPSG:4326,WGS84,ellipsoidal,m
+RIO02,RIO04,,rio-v2-four-locations,ac8ade4f02e935b47e0eedfc7b74d1f9cdd0968b5544b20ed6978b0d3a132f4e,EPSG:4326,WGS84,ellipsoidal,m
+RIO03,RIO04,,rio-v2-four-locations,ac8ade4f02e935b47e0eedfc7b74d1f9cdd0968b5544b20ed6978b0d3a132f4e,EPSG:4326,WGS84,ellipsoidal,m

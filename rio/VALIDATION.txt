@@ -1,12 +1,17 @@
-Rio v2 | rio-v2-four-locations | Python 3.12
-18 unittest tests: PASS
-Live Uvicorn via api.py, port 8002: all six HTTP /distances results equal local results PASS
-HTTP POST /distance RIO04 to RIO02: PASS
-Four locations, six unique pairs, new station requests and reverse symmetry: PASS
-All six geodesic lines, four plot points and six bars: rendered and tested
-CSV/GeoJSON exports: PASS (four points and six connections)
-Main/API/core/plotting compile and dashboard import: PASS
-Desktop chart headless visual review: PASS
-Full Windows desktop interaction: NOT RUN (no graphical display)
-QGIS independent measurement comparison: PENDING
-Coordinates: mapped feature positions / approximate accesses, not field-surveyed.
+Rio v2.1 | dataset rio-v2-four-locations | 2026-10-25 | Python 3.12
+37 unittest tests: PASS
+Live Uvicorn via api.py, port 8002: /health and /validation PASS
+Live verify_project.py --api-url http://127.0.0.1:8002: PASS
+All six HTTP /distances results equal local results; coordinates/method/units/counts checked.
+Independent implementation: Vincenty inverse (Python math, no GeographicLib/PROJ calls).
+Independent check: all six Rio pairs PASS at numerical tolerance 0.01 m.
+Independent actual results: docs/numerical_validation.json
+QGIS CSV blank template: six rows, no invented measurements; PENDING.
+QGIS importer: stale coordinates, duplicates/missing/unknown pairs, wrong units/method and invalid numbers rejected.
+Partial measurements: INCOMPLETE; mismatches: FAIL; no implicit completed QGIS validation.
+API custom-coordinate values: strict JSON numeric input, finite and within coordinate limits.
+All modules compile and desktop module imports without creating a window: PASS.
+Six geodesic lines, four markers, six chart bars and export counts: tested.
+Full Windows desktop interaction and CMD launchers: NOT RUN here; requires local Windows check.
+Actual QGIS measurements and visual/positional review: PENDING.
+Coordinates remain mapped references / approximate accesses, not field-surveyed.

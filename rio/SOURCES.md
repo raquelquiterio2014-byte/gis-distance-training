@@ -45,3 +45,13 @@ The dataset version changed to rio-v2-four-locations. QGIS review remains pendin
 - https://fastapi.tiangolo.com/tutorial/first-steps/
 
 This educational workflow calculates ellipsoidal separations, not routes or 3D lengths.
+
+## Independent numerical implementation (v2.1)
+
+T. Vincenty (1975), Direct and Inverse Solutions of Geodesics on the Ellipsoid
+with Application of Nested Equations, Survey Review 23(176).
+Primary paper hosted by NOAA NGS: https://www.ngs.noaa.gov/PUBS_LIB/inverse.pdf
+
+`independent_geodesic.py` implements the inverse iteration with Python math,
+without GeographicLib/PROJ calls. It is used for the short Rio baselines; failure
+to converge is surfaced explicitly. Computational agreement is not positional accuracy.

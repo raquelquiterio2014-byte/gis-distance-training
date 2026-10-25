@@ -28,15 +28,33 @@ def distance_m(lat1, lon1, lat2, lon2):
 
 
 def load_dataset(path=DATA_FILE):
-    dataset = json.loads(Path(path).read_text(encoding='utf-8'))
+    try:
+        dataset = json.loads(Path(path).read_text(encoding='utf-8'))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f'Cannot read locations dataset: {exc}') from exc
+    if not isinstance(dataset, dict):
+        raise ValueError('Dataset must be a JSON object')
+    for key in ['dataset_version', 'crs', 'ellipsoid', 'coordinate_status', 'note']:
+        if not isinstance(dataset.get(key), str) or not dataset[key].strip():
+            raise ValueError(f'Dataset field {key} must be a nonempty string')
     if dataset['crs'] != 'EPSG:4326' or dataset['ellipsoid'] != 'WGS84':
         raise ValueError('Dataset must use EPSG:4326 and WGS84')
-    locations = dataset['locations']
-    if len(locations) < 2 or len({p['id'] for p in locations}) != len(locations):
+    locations = dataset.get('locations')
+    if not isinstance(locations, list) or len(locations) < 2:
         raise ValueError('At least two locations with distinct IDs are required')
+    ids = set()
     for point in locations:
-        validate_coordinate(point['latitude'], point['longitude'])
+        if not isinstance(point, dict):
+            raise ValueError('Each location must be a JSON object')
+        for key in ['id', 'name', 'access_note', 'source_url', 'coordinate_basis']:
+            if not isinstance(point.get(key), str) or not point[key].strip():
+                raise ValueError(f'Location field {key} must be a nonempty string')
+        if point['id'] in ids:
+            raise ValueError('Location IDs must be distinct')
+        ids.add(point['id'])
+        validate_coordinate(point.get('latitude'), point.get('longitude'))
     return dataset
+
 
 
 def pair_result(a, b):

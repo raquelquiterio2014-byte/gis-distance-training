@@ -1,4 +1,4 @@
-# GIS Training — Rio de Janeiro v2
+# GIS Training — Rio de Janeiro v2.1
 
 Four reference locations, six WGS 84 geodesic distances, an English Python desktop
 dashboard and a local FastAPI service. Workflow: QGIS → Python → FastAPI → comparison → GitHub.
@@ -20,8 +20,8 @@ coordinates. RIO01, Copacabana Palace, is unchanged.
 
 These mapped feature positions identify the monuments themselves, but are not
 survey-grade exact coordinates. The hotel and lower station remain approximate
-access references. QGIS visual review and independent numerical comparison are
-pending. Per-location status and source provenance are recorded in `data/locations.json`.
+access references. QGIS visual review and measurement comparison are pending. The independent
+Vincenty numerical cross-check now passes for all six Rio pairs. Per-location status and source provenance are recorded in `data/locations.json`.
 
 ### Migration from v1
 
@@ -67,7 +67,9 @@ Portuguese instructions: [LEIA_ME.md](LEIA_ME.md).
 - Export CSV + GeoJSON writes four result files in the chosen directory.
 - Save chart as PNG exports the current coordinate chart.
 - Reload coordinates refreshes data, selectors, counts and charts; previous comparisons clear.
-- Compare with local API checks the complete dataset and all six pair results.
+- Compare with local API checks the complete dataset, method, units and all six pair results.
+- Numerical & QGIS Checks runs the independent Vincenty calculation, exports a blank QGIS
+  template, imports measured values and saves the latest check report as JSON.
 
 This chart is a coordinate plot without a street basemap, not a QGIS screenshot.
 The plotted and exported line geometries sample the ellipsoidal geodesic.
@@ -96,6 +98,7 @@ monument and Cosme Velho lower station, **not the length of the railway**.
 | GET `/health` | Status, version, four locations and six-pair count |
 | GET `/points`, GET `/locations` | Coordinates, individual provenance and dataset metadata |
 | GET `/distances` | All six pairs, coordinates, method and counts |
+| GET `/validation` | Independent GeographicLib/Vincenty numerical cross-check |
 | GET `/distance?from_id=RIO02&to_id=RIO04` | One selected pair |
 | POST `/distance` | IDs or custom coordinates |
 | GET `/geojson/points` | Four Point features |
@@ -144,6 +147,68 @@ For the next QGIS stage:
 No QGIS reference distances have been entered; the comparison remains pending.
 Actual project screenshots and the final LinkedIn post follow local verification.
 
+## Numerical checks completed in code
+
+Three different checks now have separate purposes:
+
+1. **Desktop/API consistency** checks the HTTP transport, data, counts, units and method.
+   Both use GeographicLib, so this is not an independent implementation.
+2. **Independent numerical check** compares GeographicLib with a Vincenty inverse
+   implementation in `independent_geodesic.py`, using only Python's `math` module.
+   It does not call GeographicLib, PyProj or PROJ. All six Rio pairs pass the 0.01 m
+   numerical tolerance. Vincenty's iterative method is suitable for these short
+   baselines; near-antipodal cases can fail. Failure is reported explicitly, with
+   no hidden fallback to the primary engine.
+3. **QGIS measurement comparison** consumes the actual measured values supplied
+   by the user. It remains PENDING until measurements are entered. None are invented.
+
+None of these checks establishes ground positional accuracy.
+
+### Import measured QGIS results
+
+Use **Save QGIS CSV template** in the new dashboard tab, or copy the bundled
+`data/qgis_reference_template.csv`. The six `qgis_distance_m` cells are deliberately
+blank. Confirm that QGIS uses the exact current points, WGS 84 ellipsoid and meters;
+fill only those cells, using a decimal point. Preserve the identifiers, version,
+coordinate hash, CRS, ellipsoid, measurement method and distance-unit columns.
+Then choose **Import QGIS measurements**.
+
+The importer requires every pair once (either direction), checks the declared
+settings and coordinate fingerprint, and rejects invalid numbers, wrong units,
+stale coordinates, duplicate/unknown pairs and missing rows. Blank measurements
+remain PENDING; some measured/blank rows produce INCOMPLETE; differences above
+0.01 m produce FAIL. PASS requires all six measurements to agree within tolerance.
+The file's metadata is a declaration of the settings used, not proof of how the
+measurements were obtained. Use sufficient measurement precision for the chosen tolerance.
+
+### Verify in PowerShell without opening the dashboard
+
+```powershell
+.\.venv312\Scripts\python.exe verify_project.py
+```
+
+This runs the independent calculation; API is NOT_RUN and QGIS is PENDING.
+With the API running in another window:
+
+```powershell
+.\.venv312\Scripts\python.exe verify_project.py --api-url http://127.0.0.1:8002 --output verification.json
+```
+
+To include actual QGIS values:
+
+```powershell
+.\.venv312\Scripts\python.exe verify_project.py --api-url http://127.0.0.1:8002 --qgis-csv completed_qgis.csv --output verification.json
+```
+
+A supplied incomplete/blank QGIS file, failed independent calculation, inconsistent
+API result or connection error returns a nonzero exit code. No QGIS file provided
+means PENDING, not an overall completed QGIS validation. `VERIFY_API.cmd` runs the
+independent and live API checks; start `RUN_API.cmd` first.
+
+`RUN_TESTS.cmd` installs test requirements and runs the full automated suite.
+Both API and dashboard launchers now call `SETUP.cmd`, so either can create the
+Python 3.12 environment. Initial setup requires internet.
+
 ## Validation
 
 ```powershell
@@ -168,3 +233,15 @@ plus existing numerical and invalid-input checks. See `VALIDATION.txt`.
 - `tests/`: automated tests.
 - `RUN_DASHBOARD.cmd`, `RUN_API.cmd`: Windows launchers.
 - `SOURCES.md`: source and approximation notes.
+
+### Added in v2.1
+
+- `independent_geodesic.py`: separate Vincenty numerical implementation.
+- `validation.py`: independent, API and QGIS report logic.
+- `verify_project.py`: CLI checks with JSON export and meaningful exit status.
+- `data/qgis_reference_template.csv`: six blank reference measurements.
+- `SETUP.cmd`, `RUN_TESTS.cmd`, `VERIFY_API.cmd`: Windows setup and verification.
+- `docs/numerical_validation.json`: actual independent-check result for the bundled coordinates.
+
+Walking/driving routes remain a separate future exercise. This release measures
+ellipsoidal point separations and does not model routes or transport itineraries.

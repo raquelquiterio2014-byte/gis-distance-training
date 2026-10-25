@@ -1,4 +1,4 @@
-# GIS Distance Training — Rio de Janeiro v2
+# GIS Distance Training — Rio de Janeiro v2.1
 
 Agora são **quatro localizações e seis pares de distâncias**.
 
@@ -77,3 +77,49 @@ A tolerância de 0,01 m verifica consistência numérica, não precisão das pos
 ```
 
 O README em inglês detalha endpoints, metodologia e arquivos.
+
+## Fechamento do código — v2.1
+
+Agora a aba **Numerical & QGIS Checks** permite:
+
+- **Run independent check**: comparar GeographicLib com Vincenty, implementado
+  separadamente com `math`, sem chamar GeographicLib ou PROJ. Os seis pares
+  passam na tolerância numérica de 0,01 m.
+- **Save QGIS CSV template**: gerar seis linhas com as distâncias do QGIS em branco.
+- **Import QGIS measurements**: importar os valores que você mediu no QGIS.
+- **Save check report**: salvar o relatório da última verificação em JSON.
+
+Preencha apenas `qgis_distance_m` no modelo, em metros, com ponto decimal.
+Não altere as colunas de identificação, versão, hash das coordenadas e método.
+Confirme os mesmos pontos e a medição elipsoidal WGS 84 no QGIS. O importador
+rejeita pares repetidos, faltantes ou desconhecidos, coordenadas antigas, unidades
+incompatíveis e números inválidos. Valores em branco continuam PENDING; um
+conjunto parcialmente preenchido fica INCOMPLETE. PASS exige os seis resultados.
+Isso verifica concordância numérica, não precisão geográfica nem medição em campo.
+
+Vincenty pode não convergir para pontos quase antípodas; nesses casos a checagem
+mostra erro, sem usar silenciosamente o motor principal. Os pares curtos do Rio
+foram testados com sucesso.
+
+Atalhos Windows: `SETUP.cmd`, `RUN_DASHBOARD.cmd`, `RUN_API.cmd`,
+`RUN_TESTS.cmd` e `VERIFY_API.cmd`. Os atalhos de dashboard e API preparam o
+ambiente automaticamente. Para `VERIFY_API.cmd`, mantenha a API aberta em outra janela.
+
+Também pode conferir pelo PowerShell:
+
+```powershell
+.\.venv312\Scripts\python.exe verify_project.py
+.\.venv312\Scripts\python.exe verify_project.py --api-url http://127.0.0.1:8002 --output verification.json
+```
+
+O primeiro comando executa a checagem independente sem exigir API ou QGIS.
+O segundo exige a API ativa. Para incluir os valores realmente medidos:
+
+```powershell
+.\.venv312\Scripts\python.exe verify_project.py --api-url http://127.0.0.1:8002 --qgis-csv completed_qgis.csv --output verification.json
+```
+
+A API também expõe `GET /validation`. A comparação com o QGIS permanece pendente
+até você fornecer os valores; o código não os preenche automaticamente.
+A execução completa da janela deve ser conferida no Windows. Rotas a pé e de
+carro pertencem ao projeto adicional e não foram incluídas nesta versão geodésica.
