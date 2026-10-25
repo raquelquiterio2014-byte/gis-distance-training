@@ -4,3 +4,7 @@ __pycache__/
 .idea/
 exports/*
 !exports/.gitkeep
+
+.map_cache/
+assets/qgis_screenshots/*
+!assets/qgis_screenshots/README.md

@@ -1,5 +1,5 @@
-Rio v2.1 | dataset rio-v2-four-locations | 2026-10-25 | Python 3.12
-37 unittest tests: PASS
+Rio v2.2 | dataset rio-v2-four-locations | 2026-10-25 | Python 3.12
+49 unittest tests: PASS
 Live Uvicorn via api.py, port 8002: /health and /validation PASS
 Live verify_project.py --api-url http://127.0.0.1:8002: PASS
 All six HTTP /distances results equal local results; coordinates/method/units/counts checked.
@@ -15,3 +15,14 @@ Six geodesic lines, four markers, six chart bars and export counts: tested.
 Full Windows desktop interaction and CMD launchers: NOT RUN here; requires local Windows check.
 Actual QGIS measurements and visual/positional review: PENDING.
 Coordinates remain mapped references / approximate accesses, not field-surveyed.
+
+Map/gallery v2.2 verification:
+- Live OpenStreetMap current viewport loaded and chart rendered with four named points and six geodesic lines.
+- Map overlay visually reviewed; same source coordinates and six distances preserved.
+- Projection roundtrip, marker alignment, bounds and attribution: PASS.
+- Tile identification, HTTP-aware cache, conditional 304 and network-failure fallback: PASS.
+- Screenshot gallery empty state, import preservation, duplicate/same-name handling, thumbnail aspect and invalid files: PASS.
+- Main/basemap/gallery/plotting compile and desktop import: PASS.
+- Full interaction with new v2.2 Windows map and gallery controls: pending user's local run.
+- Earlier v2.1 Windows dashboard/API and independent checks were confirmed by user screenshots.
+- No actual QGIS captures have been added by the implementation; gallery accepts the user's own files.

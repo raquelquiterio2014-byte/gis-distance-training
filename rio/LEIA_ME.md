@@ -1,4 +1,4 @@
-# GIS Distance Training — Rio de Janeiro v2.1
+# GIS Distance Training — Rio de Janeiro v2.2
 
 Agora são **quatro localizações e seis pares de distâncias**.
 
@@ -123,3 +123,33 @@ A API também expõe `GET /validation`. A comparação com o QGIS permanece pend
 até você fornecer os valores; o código não os preenche automaticamente.
 A execução completa da janela deve ser conferida no Windows. Rotas a pé e de
 carro pertencem ao projeto adicional e não foram incluídas nesta versão geodésica.
+
+## Mapa de ruas e galeria — v2.2
+
+A aba **Distance Dashboard** agora mostra ruas e bairros do OpenStreetMap atrás
+dos quatro pontos, com as seis ligações e destaque do par selecionado.
+Os cálculos continuam geodésicos em WGS 84; o mapa não transforma as linhas
+em rotas de ruas, trem ou bondinho. As coordenadas dos locais não foram alteradas.
+
+- **Street basemap**: ativa/desativa o mapa-base.
+- **Load street map**: carrega a área atual; o primeiro carregamento precisa de internet.
+- **Open Rio in OpenStreetMap**: abre a região no navegador.
+- **Open origin in OpenStreetMap**: abre o local escolhido em Origin com marcador.
+- **Save chart as PNG**: salva o gráfico atual, incluindo o mapa e a atribuição.
+- **All Distances**: contém a tabela com os seis pares; ela foi movida para dar espaço ao mapa.
+
+A busca do mapa roda em segundo plano. Se não houver conexão ou o serviço
+estiver indisponível, o gráfico de coordenadas continua funcionando.
+O cache local é reaproveitado para a área já visualizada; não há download
+de áreas para uso offline nem busca antecipada de outros níveis de zoom.
+A barra do Matplotlib permite ampliar/mover a imagem já carregada; para
+explorar outras regiões em detalhe, use o botão do OpenStreetMap.
+
+Na aba **QGIS Screenshots**, clique em **Add QGIS screenshots** e selecione suas
+capturas reais do QGIS. Elas serão copiadas para `assets/qgis_screenshots/` sem
+apagar os arquivos originais. A lista permite trocar a imagem e **Reload gallery**
+atualiza a pasta. Não incluímos imagens ilustrativas como se fossem capturas
+reais. A galeria não altera o status das medições ou da revisão das posições.
+
+Após baixar a atualização, rode `SETUP.cmd` e `RUN_DASHBOARD.cmd`. A dependência
+Pillow será instalada automaticamente. A API continua na porta 8002.

@@ -55,3 +55,14 @@ Primary paper hosted by NOAA NGS: https://www.ngs.noaa.gov/PUBS_LIB/inverse.pdf
 `independent_geodesic.py` implements the inverse iteration with Python math,
 without GeographicLib/PROJ calls. It is used for the short Rio baselines; failure
 to converge is surfaced explicitly. Computational agreement is not positional accuracy.
+
+## Display basemap — v2.2
+
+OpenStreetMap Standard raster tiles: https://tile.openstreetmap.org/{z}/{x}/{y}.png
+© OpenStreetMap contributors: https://www.openstreetmap.org/copyright
+Usage policy: https://operations.osmfoundation.org/policies/tiles/
+
+Only the actively viewed viewport is requested. HTTP cache metadata and conditional
+requests are retained; no tile archives or offline-area download are provided.
+This map is visual context, separate from numerical measurement and positional review.
+User-imported QGIS captures retain their own basemap attribution.

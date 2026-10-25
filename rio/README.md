@@ -1,4 +1,4 @@
-# GIS Training — Rio de Janeiro v2.1
+# GIS Training — Rio de Janeiro v2.2
 
 Four reference locations, six WGS 84 geodesic distances, an English Python desktop
 dashboard and a local FastAPI service. Workflow: QGIS → Python → FastAPI → comparison → GitHub.
@@ -55,7 +55,8 @@ Alternatively: `python -m uvicorn api:app --host 127.0.0.1 --port 8002`.
 Rio uses port 8002; Paris uses 8001 and the regional exercise uses 8000.
 Open `rio/` as the PyCharm project so modules from other exercises are not imported.
 Tkinter accompanies standard Windows Python installations; Linux may need python3-tk.
-The dashboard works offline after dependency installation, without starting the API.
+The coordinate dashboard works offline after dependency installation, without starting the API.
+The street basemap requires online access when tiles for the current view are not cached.
 
 Portuguese instructions: [LEIA_ME.md](LEIA_ME.md).
 
@@ -71,8 +72,8 @@ Portuguese instructions: [LEIA_ME.md](LEIA_ME.md).
 - Numerical & QGIS Checks runs the independent Vincenty calculation, exports a blank QGIS
   template, imports measured values and saves the latest check report as JSON.
 
-This chart is a coordinate plot without a street basemap, not a QGIS screenshot.
-The plotted and exported line geometries sample the ellipsoidal geodesic.
+The chart can display an OpenStreetMap street basemap or the original coordinate overview.
+Neither is a QGIS screenshot. The plotted and exported lines sample the ellipsoidal geodesic.
 
 ## Six pairwise results
 
@@ -245,3 +246,43 @@ plus existing numerical and invalid-input checks. See `VALIDATION.txt`.
 
 Walking/driving routes remain a separate future exercise. This release measures
 ellipsoidal point separations and does not model routes or transport itineraries.
+
+## Street map and screenshot gallery — v2.2
+
+**Distance Dashboard** now draws the same four points and all six geodesic
+connections over an OpenStreetMap basemap with streets and neighborhood labels.
+The selected pair is highlighted. The numerical engine and source coordinates
+have not changed. The basemap is displayed in Web Mercator solely for visualization;
+all distances remain ellipsoidal WGS 84 values.
+
+- **Street basemap** toggles between streets and the coordinate overview.
+- **Load street map** requests only the current Rio viewport and respects the local cache.
+- **Open Rio in OpenStreetMap** opens the region in your browser.
+- **Open origin in OpenStreetMap** opens a marker for the selected origin point.
+- The Matplotlib toolbar supports pan/zoom on the loaded image and reset to the
+  original view; it does not request other regions or higher-resolution tiles.
+- **Save chart as PNG** preserves the visible map and attribution.
+- The six-row table is now in **All Distances**, giving the map more room.
+
+Network loading runs in a worker, keeping the window responsive. Online access
+is required for uncached tiles. If loading fails, the coordinate view remains
+available and a message explains how to retry. The application caches the
+current view with HTTP expiry/conditional requests. Cached revisits can reuse
+already obtained tiles; there is no offline-area download or tile archive.
+Only a single viewport is loaded, with at most two concurrent requests and 24
+tiles. User-Agent identification and visible OpenStreetMap attribution are included.
+Service policy: https://operations.osmfoundation.org/policies/tiles/
+OSM attribution: https://www.openstreetmap.org/copyright
+Tile cache `.map_cache/` is local and ignored by Git.
+
+**QGIS Screenshots** starts empty. Choose **Add QGIS screenshots** to import
+your actual PNG/JPEG/WebP captures. They are copied into `assets/qgis_screenshots/`;
+existing captures are preserved, identical images are reused, and same-name
+different files receive a suffix. The selector switches captures and the preview
+resizes proportionally. **Reload gallery** discovers files copied into the folder.
+Local screenshot imports are ignored by Git and are not automatically uploaded.
+No promotional or generated image is passed off as an original QGIS capture.
+Viewing a screenshot does not automatically complete numerical or positional validation.
+
+New files: `basemap.py`, `gallery.py`, `tests/test_maps.py`. Pillow is now an explicit
+dependency; run `SETUP.cmd` after updating, then `RUN_DASHBOARD.cmd`.

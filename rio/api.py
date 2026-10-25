@@ -4,7 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from validation import independent_report
 from core import load_dataset, result_bundle, pair_result, distance_m, points_geojson, lines_geojson
 
-app = FastAPI(title='Rio de Janeiro GIS Distance Training', version='2.1.0',
+app = FastAPI(title='Rio de Janeiro GIS Distance Training', version='2.2.0',
               description='Four mapped reference locations: Christ monument, Sugarloaf summit, Copacabana Palace and Cosme Velho station. WGS 84 ellipsoidal geodesics; no routes or altitude.')
 
 

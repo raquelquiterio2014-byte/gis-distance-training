@@ -8,7 +8,10 @@ import webbrowser
 from tkinter import filedialog, messagebox, ttk
 from plotting import draw_distance_figure
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from PIL import ImageTk
+from basemap import load_street_map, view_spec, openstreetmap_url
+from gallery import list_screenshots, add_screenshot, screenshot_thumbnail
 from core import ROOT, load_dataset, all_distances, export_dataset
 from validation import independent_report, qgis_report, write_qgis_template, compare_api_payload, format_report
 
@@ -23,6 +26,13 @@ class Dashboard(tk.Tk):
         self.minsize(1050, 760)
         self.configure(bg='#eef3f8')
         self.results_queue = queue.Queue()
+        self.map_queue = queue.Queue()
+        self.street_map = None
+        self.map_busy = False
+        self.show_streets = tk.BooleanVar(value=True)
+        self.selected_pair = ('RIO01', 'RIO02')
+        self.gallery_photo = None
+        self.gallery_resize_job = None
         self.last_check_report = None
         self.qgis_status = 'PENDING'
         self.dataset = load_dataset()
@@ -80,10 +90,39 @@ class Dashboard(tk.Tk):
         self.checks_text.configure(yscrollcommand=checks_scroll.set)
         checks_scroll.pack(side='right', fill='y')
         self.checks_text.pack(fill='both', expand=True)
+        self.distances_tab = ttk.Frame(self.tabs)
+        self.tabs.add(self.distances_tab, text='All Distances')
+        self.gallery_tab = ttk.Frame(self.tabs)
+        self.tabs.add(self.gallery_tab, text='QGIS Screenshots')
+        gallery_controls = ttk.Frame(self.gallery_tab, padding=10)
+        gallery_controls.pack(fill='x')
+        ttk.Button(gallery_controls, text='Add QGIS screenshots', command=self.add_gallery_images).pack(side='left', padx=4)
+        ttk.Button(gallery_controls, text='Reload gallery', command=self.reload_gallery).pack(side='left', padx=4)
+        self.gallery_selector = ttk.Combobox(gallery_controls, state='readonly', width=60)
+        self.gallery_selector.pack(side='left', padx=8)
+        self.gallery_selector.bind('<<ComboboxSelected>>', self.show_gallery_image)
+        self.gallery_caption = tk.StringVar(value='No QGIS screenshots added. Use Add QGIS screenshots to select your real map captures.')
+        ttk.Label(self.gallery_tab, textvariable=self.gallery_caption, padding=10, wraplength=1000).pack(fill='x')
+        self.gallery_image_label = ttk.Label(self.gallery_tab, anchor='center')
+        self.gallery_image_label.pack(fill='both', expand=True)
+        self.gallery_image_label.bind('<Configure>', self.resize_gallery_image)
+        map_controls = ttk.Frame(self.overview, padding=(8, 5))
+        map_controls.pack(fill='x')
+        ttk.Checkbutton(map_controls, text='Street basemap', variable=self.show_streets,
+                        command=self.toggle_street_map).pack(side='left', padx=4)
+        self.map_button = ttk.Button(map_controls, text='Load street map', command=self.load_map)
+        self.map_button.pack(side='left', padx=4)
+        ttk.Button(map_controls, text='Open Rio in OpenStreetMap',
+                   command=lambda: webbrowser.open(openstreetmap_url(self.dataset))).pack(side='left', padx=4)
+        ttk.Button(map_controls, text='Open origin in OpenStreetMap', command=self.open_selected_location).pack(side='left', padx=4)
+        self.map_message = tk.StringVar(value='Street map loads online; coordinate view stays available if loading fails.')
+        ttk.Label(self.overview, textvariable=self.map_message, wraplength=1100, padding=(12, 2)).pack(fill='x')
         self.figure = Figure(figsize=(11.5, 3.8), dpi=100, facecolor='white')
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.overview)
+        self.map_toolbar = NavigationToolbar2Tk(self.canvas, self.overview, pack_toolbar=False)
+        self.map_toolbar.pack(side='bottom', fill='x')
         self.canvas.get_tk_widget().pack(fill='both', expand=True)
-        self.table = ttk.Treeview(self.overview, columns=('pair', 'meters', 'km'), show='headings', height=6)
+        self.table = ttk.Treeview(self.distances_tab, columns=('pair', 'meters', 'km'), show='headings', height=6)
         for column, label, width in [('pair', 'Location pair', 650), ('meters', 'Distance (m)', 150), ('km', 'Distance (km)', 150)]:
             self.table.heading(column, text=label)
             self.table.column(column, width=width, anchor='w' if column == 'pair' else 'e')
@@ -96,7 +135,11 @@ class Dashboard(tk.Tk):
         tk.Label(self, textvariable=self.status, anchor='w', padx=16, pady=10,
                  bg='#eef3f8', font=('Segoe UI', 10)).pack(fill='x')
         self.draw()
+        self.reload_gallery()
+        self.tabs.bind('<<NotebookTabChanged>>', self.on_tab_changed)
         self.after(100, self.poll_results)
+        self.after(150, self.poll_map_results)
+        self.after(200, self.load_map)
 
     def draw(self):
         self.summary.set(f"{self.dataset['coordinate_status']} | {len(self.dataset['locations'])} locations / {len(self.rows)} pairs | No street routes or altitude.\n"
@@ -116,8 +159,14 @@ class Dashboard(tk.Tk):
         for row in self.rows:
             self.table.insert('', 'end', values=(f"{row['from_id']} — {row['to_id']}",
                                                 f"{row['distance_m']:,.2f}", f"{row['distance_km']:.3f}"))
-        draw_distance_figure(self.figure, self.dataset)
-        self.canvas.draw()
+        if self.street_map is not None:
+            try:
+                bounds, key = view_spec(self.dataset)
+                if self.street_map.view_key != key or self.street_map.bounds_lon_lat != bounds:
+                    self.street_map = None
+            except ValueError:
+                self.street_map = None
+        self.redraw_chart()
         sections = [f"Dataset: {self.dataset['dataset_version']}\nCRS: EPSG:4326 | Ellipsoid: WGS 84\nStatus: {self.dataset['coordinate_status']}\n"]
         for p in self.dataset['locations']:
             sections.append(f"{p['id']} | {p['name']}\nLatitude: {p['latitude']:.6f} | Longitude: {p['longitude']:.6f}\n"
@@ -141,6 +190,7 @@ class Dashboard(tk.Tk):
             self.dataset, self.rows = dataset, rows
             self.draw()
             self.status.set('Coordinates reloaded. Previous comparisons cleared; recompare after changes.')
+            self.load_map()
         except Exception as exc:
             messagebox.showerror('Dataset error', str(exc))
 
@@ -151,6 +201,8 @@ class Dashboard(tk.Tk):
             return
         row = next(r for r in self.rows if {r['from_id'], r['to_id']} == {origin, destination})
         self.status.set(f"{origin} / {destination}: {row['distance_m']:,.3f} m | {row['distance_km']:.3f} km. Cartographic reference locations; no route or altitude.")
+        self.selected_pair = (origin, destination)
+        self.redraw_chart()
         self.tabs.select(self.overview)
         self.table.selection_set(self.table.get_children()[self.rows.index(row)])
 
@@ -160,7 +212,7 @@ class Dashboard(tk.Tk):
         if path:
             try:
                 self.figure.savefig(path, dpi=180, bbox_inches='tight')
-                self.status.set('Chart saved as PNG. Coordinate overview only, not a QGIS screenshot.')
+                self.status.set('Current chart saved as PNG, including visible basemap attribution. This is not a QGIS screenshot.')
             except Exception as exc:
                 messagebox.showerror('Export error', str(exc))
 
@@ -173,6 +225,113 @@ class Dashboard(tk.Tk):
                 self.status.set('Exported current dashboard dataset. QGIS validation is still required.')
             except Exception as exc:
                 messagebox.showerror('Export error', str(exc))
+
+    def redraw_chart(self):
+        basemap = self.street_map if self.show_streets.get() else None
+        draw_distance_figure(self.figure, self.dataset, basemap=basemap, selected_pair=self.selected_pair)
+        self.canvas.draw_idle()
+        self.map_toolbar.update()
+
+    def toggle_street_map(self):
+        self.redraw_chart()
+        if self.show_streets.get():
+            self.load_map()
+        else:
+            self.map_message.set('Coordinate overview selected. Distance calculations are unchanged.')
+
+    def on_tab_changed(self, event=None):
+        if self.tabs.select() == str(self.overview) and self.show_streets.get() and self.street_map is None:
+            self.load_map()
+        elif self.tabs.select() == str(self.gallery_tab):
+            self.show_gallery_image()
+
+    def load_map(self):
+        if self.map_busy or not self.show_streets.get() or self.tabs.select() != str(self.overview):
+            return
+        self.map_busy = True
+        self.map_button.configure(state='disabled')
+        self.map_message.set('Loading streets and neighborhoods for the current view...')
+        dataset = self.dataset
+        def worker():
+            try:
+                self.map_queue.put((dataset, load_street_map(dataset), None))
+            except Exception as exc:
+                self.map_queue.put((dataset, None, str(exc)))
+        threading.Thread(target=worker, daemon=True).start()
+
+    def poll_map_results(self):
+        try:
+            snapshot, basemap, error = self.map_queue.get_nowait()
+            self.map_busy = False
+            self.map_button.configure(state='normal')
+            if snapshot is self.dataset:
+                if error:
+                    self.map_message.set(f'Street map unavailable: {error}. Coordinate view remains available; retry Load street map.')
+                else:
+                    self.street_map = basemap
+                    self.map_message.set('OpenStreetMap streets and neighborhoods. ' +
+                        ('Using previously cached tiles; the online refresh failed.' if basemap.stale else 'Current viewport loaded.') +
+                        ' Lines show geodesic separations, not road routes.')
+                self.redraw_chart()
+            else:
+                self.load_map()
+        except queue.Empty:
+            pass
+        self.after(150, self.poll_map_results)
+
+    def open_selected_location(self):
+        point = next(p for p in self.dataset['locations'] if p['id'] == self.origin.get())
+        webbrowser.open(openstreetmap_url(self.dataset, point))
+
+    def reload_gallery(self):
+        previous = self.gallery_selector.get()
+        self.gallery_paths = list_screenshots()
+        names = [p.name for p in self.gallery_paths]
+        self.gallery_selector.configure(values=names)
+        self.gallery_selector.set(previous if previous in names else names[0] if names else '')
+        self.show_gallery_image()
+
+    def add_gallery_images(self):
+        paths = filedialog.askopenfilenames(title='Choose your QGIS screenshots',
+                    filetypes=[('Images', '*.png *.jpg *.jpeg *.webp')])
+        if not paths:
+            return
+        errors, imported = [], []
+        for path in paths:
+            try:
+                imported.append(add_screenshot(path))
+            except Exception as exc:
+                errors.append(f'{path}: {exc}')
+        self.reload_gallery()
+        if imported:
+            self.gallery_selector.set(imported[-1].name)
+            self.show_gallery_image()
+        if errors:
+            messagebox.showerror('Screenshot import', '\n'.join(errors))
+
+    def resize_gallery_image(self, event=None):
+        if self.gallery_resize_job:
+            self.after_cancel(self.gallery_resize_job)
+        self.gallery_resize_job = self.after(150, self.show_gallery_image)
+
+    def show_gallery_image(self, event=None):
+        self.gallery_resize_job = None
+        selected = next((p for p in getattr(self, 'gallery_paths', []) if p.name == self.gallery_selector.get()), None)
+        if selected is None:
+            self.gallery_image_label.configure(image='')
+            self.gallery_photo = None
+            self.gallery_caption.set('No QGIS screenshots added. Use Add QGIS screenshots to select your real map captures.')
+            return
+        try:
+            size = (max(300, self.gallery_image_label.winfo_width() - 20),
+                    max(200, self.gallery_image_label.winfo_height() - 20))
+            self.gallery_photo = ImageTk.PhotoImage(screenshot_thumbnail(selected, size))
+            self.gallery_image_label.configure(image=self.gallery_photo)
+            self.gallery_caption.set(f'{selected.name} — user-provided capture. Imported images do not automatically validate coordinates or measurements.')
+        except Exception as exc:
+            self.gallery_image_label.configure(image='')
+            self.gallery_photo = None
+            self.gallery_caption.set(f'Cannot open screenshot: {exc}')
 
     def run_independent(self):
         report = independent_report(self.dataset)
