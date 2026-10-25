@@ -1,0 +1,10 @@
+Automated validation: 14 unittest tests passed.
+Live HTTP on port 8003: /distances matches exported results.
+GeographicLib / PyProj: all 3 pairs agree within 0.000001 m.
+Python compilation: passed.
+Windows dashboard and API: verified by user screenshots on 2026-10-25.
+.cmd shortcuts: not separately exercised.
+QGIS displayed values: 8249.518 m, 1346.200 m, 9594.769 m.
+All match Python at 0.001 m displayed precision.
+Cross-application consistency only; QGIS also uses GeographicLib.
+Coordinates remain approximate. See docs/validation.md.

@@ -1,0 +1,108 @@
+"""Shared WGS 84 ellipsoidal distance engine; no GUI or server side effects."""
+import csv
+import json
+import math
+from itertools import combinations
+from pathlib import Path
+from geographiclib.geodesic import Geodesic
+
+ROOT = Path(__file__).resolve().parent
+DATA_FILE = ROOT / 'data' / 'locations.json'
+METHOD = 'WGS 84 ellipsoidal geodesic (GeographicLib inverse)'
+
+
+def validate_coordinate(latitude, longitude):
+    for value, lower, upper, label in (
+        (latitude, -90, 90, 'latitude'), (longitude, -180, 180, 'longitude')
+    ):
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValueError(f'{label} must be a number')
+        if not math.isfinite(value) or not lower <= value <= upper:
+            raise ValueError(f'{label} must be finite and between {lower} and {upper}')
+
+
+def distance_m(lat1, lon1, lat2, lon2):
+    validate_coordinate(lat1, lon1)
+    validate_coordinate(lat2, lon2)
+    return Geodesic.WGS84.Inverse(lat1, lon1, lat2, lon2)['s12']
+
+
+def load_dataset(path=DATA_FILE):
+    dataset = json.loads(Path(path).read_text(encoding='utf-8'))
+    if dataset['crs'] != 'EPSG:4326' or dataset['ellipsoid'] != 'WGS84':
+        raise ValueError('Dataset must use EPSG:4326 and WGS84')
+    locations = dataset['locations']
+    if len(locations) != 3 or len({p['id'] for p in locations}) != 3:
+        raise ValueError('Exactly three locations with distinct IDs are required')
+    for point in locations:
+        validate_coordinate(point['latitude'], point['longitude'])
+    return dataset
+
+
+def pair_result(a, b):
+    meters = distance_m(a['latitude'], a['longitude'], b['latitude'], b['longitude'])
+    return {'from_id': a['id'], 'to_id': b['id'], 'from_name': a['name'],
+            'to_name': b['name'], 'distance_m': meters, 'distance_km': meters / 1000}
+
+
+def all_distances(dataset):
+    return [pair_result(a, b) for a, b in combinations(dataset['locations'], 2)]
+
+
+def result_bundle(dataset):
+    return {'dataset_version': dataset['dataset_version'], 'crs': dataset['crs'],
+            'ellipsoid': dataset['ellipsoid'], 'method': METHOD,
+            'coordinate_status': dataset['coordinate_status'],
+            'note': dataset['note'], 'locations': dataset['locations'],
+            'distances': all_distances(dataset)}
+
+
+def points_geojson(dataset):
+    return {'type': 'FeatureCollection', 'features': [
+        {'type': 'Feature', 'geometry': {'type': 'Point',
+         'coordinates': [p['longitude'], p['latitude']]},
+         'properties': {**p, 'coordinate_status': dataset['coordinate_status'],
+                        'dataset_version': dataset['dataset_version']}}
+        for p in dataset['locations']]}
+
+
+def geodesic_coordinates(a, b, segments=40):
+    line = Geodesic.WGS84.InverseLine(a['latitude'], a['longitude'], b['latitude'], b['longitude'])
+    result = []
+    for i in range(segments + 1):
+        p = line.Position(line.s13 * i / segments)
+        result.append([p['lon2'], p['lat2']])
+    return result
+
+
+def lines_geojson(dataset):
+    return {'type': 'FeatureCollection', 'features': [
+        {'type': 'Feature', 'geometry': {'type': 'LineString',
+         'coordinates': geodesic_coordinates(a, b)},
+         'properties': {**pair_result(a, b), 'method': METHOD,
+                        'dataset_version': dataset['dataset_version'],
+                        'coordinate_status': dataset['coordinate_status']}}
+        for a, b in combinations(dataset['locations'], 2)]}
+
+
+def export_dataset(dataset, directory):
+    directory = Path(directory)
+    directory.mkdir(parents=True, exist_ok=True)
+    files = []
+    for name, obj in [('new_york_points.geojson', points_geojson(dataset)),
+                      ('new_york_geodesics.geojson', lines_geojson(dataset)),
+                      ('python_results.json', result_bundle(dataset))]:
+        path = directory / name
+        path.write_text(json.dumps(obj, indent=2, ensure_ascii=False), encoding='utf-8')
+        files.append(path)
+    rows = all_distances(dataset)
+    path = directory / 'python_distances.csv'
+    with path.open('w', newline='', encoding='utf-8-sig') as stream:
+        fields = list(rows[0]) + ['dataset_version', 'coordinate_status']
+        writer = csv.DictWriter(stream, fieldnames=fields)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({**row, 'dataset_version': dataset['dataset_version'],
+                             'coordinate_status': dataset['coordinate_status']})
+    files.append(path)
+    return files

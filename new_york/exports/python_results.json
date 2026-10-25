@@ -1,0 +1,66 @@
+{
+  "dataset_version": "new-york-v1-draft",
+  "crs": "EPSG:4326",
+  "ellipsoid": "WGS84",
+  "method": "WGS 84 ellipsoidal geodesic (GeographicLib inverse)",
+  "coordinate_status": "APPROXIMATE_PENDING_QGIS_REVIEW",
+  "note": "Provisional approximate access references, not surveyed entrances. Review visually in QGIS before final comparison. No street or ferry routes or altitude.",
+  "locations": [
+    {
+      "id": "NYC01",
+      "slug": "empire_state",
+      "name": "Empire State Building — Observatory Access",
+      "latitude": 40.7486,
+      "longitude": -73.9857,
+      "access_note": "Approximate access reference near 20 West 34th Street.",
+      "source_url": "https://www.esbnyc.com/hours-directions",
+      "coordinate_basis": "Proposed rounded training coordinate. Source identifies the access address, not this exact coordinate. Pending visual review."
+    },
+    {
+      "id": "NYC02",
+      "slug": "statue_liberty",
+      "name": "Statue of Liberty — Pedestal Access",
+      "latitude": 40.6897,
+      "longitude": -74.0452,
+      "access_note": "Approximate pedestal access area behind the statue on Liberty Island; not the Manhattan ferry terminal.",
+      "source_url": "https://www.nps.gov/thingstodo/visit-the-pedestal.htm",
+      "coordinate_basis": "Proposed rounded training coordinate near the monument access area. Source describes access, not this exact coordinate. Pending visual review."
+    },
+    {
+      "id": "NYC03",
+      "slug": "fifth_avenue",
+      "name": "Fifth Avenue — St. Patrick's Cathedral",
+      "latitude": 40.7585,
+      "longitude": -73.9765,
+      "access_note": "Approximate sidewalk/frontage reference at the cathedral entrance facing Fifth Avenue, between 50th and 51st Streets.",
+      "source_url": "https://saintpatrickscathedral.org/",
+      "coordinate_basis": "Proposed rounded training coordinate. Cathedral frontage represents one specific point on Fifth Avenue. Pending visual review."
+    }
+  ],
+  "distances": [
+    {
+      "from_id": "NYC01",
+      "to_id": "NYC02",
+      "from_name": "Empire State Building — Observatory Access",
+      "to_name": "Statue of Liberty — Pedestal Access",
+      "distance_m": 8249.517656657787,
+      "distance_km": 8.249517656657787
+    },
+    {
+      "from_id": "NYC01",
+      "to_id": "NYC03",
+      "from_name": "Empire State Building — Observatory Access",
+      "to_name": "Fifth Avenue — St. Patrick's Cathedral",
+      "distance_m": 1346.2001990964334,
+      "distance_km": 1.3462001990964334
+    },
+    {
+      "from_id": "NYC02",
+      "to_id": "NYC03",
+      "from_name": "Statue of Liberty — Pedestal Access",
+      "to_name": "Fifth Avenue — St. Patrick's Cathedral",
+      "distance_m": 9594.769109509323,
+      "distance_km": 9.594769109509324
+    }
+  ]
+}

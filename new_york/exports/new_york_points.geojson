@@ -1,0 +1,71 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9857,
+          40.7486
+        ]
+      },
+      "properties": {
+        "id": "NYC01",
+        "slug": "empire_state",
+        "name": "Empire State Building — Observatory Access",
+        "latitude": 40.7486,
+        "longitude": -73.9857,
+        "access_note": "Approximate access reference near 20 West 34th Street.",
+        "source_url": "https://www.esbnyc.com/hours-directions",
+        "coordinate_basis": "Proposed rounded training coordinate. Source identifies the access address, not this exact coordinate. Pending visual review.",
+        "coordinate_status": "APPROXIMATE_PENDING_QGIS_REVIEW",
+        "dataset_version": "new-york-v1-draft"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.0452,
+          40.6897
+        ]
+      },
+      "properties": {
+        "id": "NYC02",
+        "slug": "statue_liberty",
+        "name": "Statue of Liberty — Pedestal Access",
+        "latitude": 40.6897,
+        "longitude": -74.0452,
+        "access_note": "Approximate pedestal access area behind the statue on Liberty Island; not the Manhattan ferry terminal.",
+        "source_url": "https://www.nps.gov/thingstodo/visit-the-pedestal.htm",
+        "coordinate_basis": "Proposed rounded training coordinate near the monument access area. Source describes access, not this exact coordinate. Pending visual review.",
+        "coordinate_status": "APPROXIMATE_PENDING_QGIS_REVIEW",
+        "dataset_version": "new-york-v1-draft"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9765,
+          40.7585
+        ]
+      },
+      "properties": {
+        "id": "NYC03",
+        "slug": "fifth_avenue",
+        "name": "Fifth Avenue — St. Patrick's Cathedral",
+        "latitude": 40.7585,
+        "longitude": -73.9765,
+        "access_note": "Approximate sidewalk/frontage reference at the cathedral entrance facing Fifth Avenue, between 50th and 51st Streets.",
+        "source_url": "https://saintpatrickscathedral.org/",
+        "coordinate_basis": "Proposed rounded training coordinate. Cathedral frontage represents one specific point on Fifth Avenue. Pending visual review.",
+        "coordinate_status": "APPROXIMATE_PENDING_QGIS_REVIEW",
+        "dataset_version": "new-york-v1-draft"
+      }
+    }
+  ]
+}

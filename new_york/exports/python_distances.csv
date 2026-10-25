@@ -1,0 +1,4 @@
+from_id,to_id,from_name,to_name,distance_m,distance_km,dataset_version,coordinate_status
+NYC01,NYC02,Empire State Building — Observatory Access,Statue of Liberty — Pedestal Access,8249.517656657787,8.249517656657787,new-york-v1-draft,APPROXIMATE_PENDING_QGIS_REVIEW
+NYC01,NYC03,Empire State Building — Observatory Access,Fifth Avenue — St. Patrick's Cathedral,1346.2001990964334,1.3462001990964334,new-york-v1-draft,APPROXIMATE_PENDING_QGIS_REVIEW
+NYC02,NYC03,Statue of Liberty — Pedestal Access,Fifth Avenue — St. Patrick's Cathedral,9594.769109509323,9.594769109509324,new-york-v1-draft,APPROXIMATE_PENDING_QGIS_REVIEW
